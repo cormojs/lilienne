@@ -1,0 +1,22 @@
+{
+  "name": "lilienne",
+  "version": "0.0.1",
+  "description": "Desktop Mastodon Client",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cormojs/lilienne.git"
+  },
+  "author": "cormojs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cormojs/lilienne/issues"
+  },
+  "homepage": "https://github.com/cormojs/lilienne#readme",
+  "devDependencies": {
+    "electron": "^1.6.5"
+  }
+}
