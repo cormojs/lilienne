@@ -1,11 +1,9 @@
 {
   "name": "lilienne",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Desktop Mastodon Client",
-  "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "main",
+  "typings": "main",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cormojs/lilienne.git"
@@ -17,6 +15,17 @@
   },
   "homepage": "https://github.com/cormojs/lilienne#readme",
   "devDependencies": {
-    "electron": "^1.6.5"
+    "@types/electron": "^1.4.37",
+    "@types/node": "^7.0.13",
+    "css-loader": "^0.28.0",
+    "electron": "^1.6.5",
+    "electron-devtools-installer": "^2.2.0",
+    "mastodon-api": "^1.2.0",
+    "ts-loader": "^2.0.3",
+    "typescript": "^2.2.2",
+    "vue": "^2.2.6",
+    "vue-loader": "^11.3.4",
+    "vue-template-compiler": "^2.2.6",
+    "webpack": "^2.4.1"
   }
 }
