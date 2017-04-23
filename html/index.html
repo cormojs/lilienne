@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Timeline Test</title>
+  <link rel="stylesheet" type="text/css" href="../css/status.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet" />
+</head>
+
+<body>
+  <h1>Test</h1>
+  <div id="lilienne">
+    <form @submit.prevent="register">
+      <input v-model.trim="hostInput" placeholder="example.com"></input>
+      <input type="submit" value="App登録"></input>
+    </form>
+    <a v-if="authUrl" :href="authUrl">{{ authUrl }}</a>
+    <form @submit.prevent="addAccount">
+      <input v-model.trim="authCode" placeholder="access token"></input>
+      <input type="submit" value="アカウント登録"></input>
+    </form>
+    <div>
+      <button @click="saveConfig">Save Config</button>
+    </div>
+    <div id="source-add">
+      <form @submit.prevent="addSource(selectedConnection, selectedAPI, selectedFilters)" v-if="showAddColumn">
+        <select id="accountSelector" v-model="selectedConnection">
+          <option disabled value="">Select your account</option>
+          <option v-for="(pair, token, i) in getAccounts"
+            :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
+        </select>
+        <select v-model="selectedAPI">
+          <option disabled value="">Select API</option>
+          <option v-for="(api, name, i) in availableAPI" :key="i" :value="api">{{ name }}</option>
+        </select>
+        <div>
+          <span v-for="(filter, name) in filters" :key="name">
+            <input type="checkbox" :id="name" :value="name" v-model="selectedFilters" />
+            <label :for="name">{{ filter.description }}</label>
+          </span>
+        </div>
+        <input type="submit" value="ソースを追加" />
+      </form>
+    </div>
+    <div id="column-add">
+      <form @submit.prevent="addColumn(columnNameInput, selectedSources)">
+        <div v-for="(source, i) in getSources" :key="i">
+          <input type="checkbox" :id="source" :value="source" v-model="selectedSources" />
+          <label :for="source.name">{{ source.name }}</label>
+        </div>
+        <input type="submit" value="カラムを追加" />
+      </form>
+    </div>
+    <div id="columns">
+      <div class="column" v-for="(c, i) in columns" :key="i">
+        <button @click="saveToots(c)">Save Toots</button>
+        <div class="column-header">{{ c.title }}</div>
+        <div class="scrollable">
+          <status v-for="status in c.statuses" :key="status.id" :status="status"></status>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../build/build.js"></script>
+</body>
+
+</html>
