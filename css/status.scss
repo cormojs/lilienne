@@ -6,9 +6,8 @@
             box-sizing: border-box;
             position: relative;
             .thumbnail {
-                $mediaSize: 100%;
+                $mediaSize: 300px;
                 float: left;
-                margin-left: 5px;
                 &:first-child {
                     &:nth-last-child(1), &:nth-last-child(2) {
                         &, & ~ .thumbnail {
