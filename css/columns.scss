@@ -1,0 +1,22 @@
+#columns {
+    $padding: 5px;
+    overflow: hidden;
+    padding-right: $padding;
+    background: #333;
+    width: 100%;
+    .column {
+        float: left;
+        padding-left: $padding;
+        &:first-child {
+            @for $i from 1 through 12 {
+                &:nth-last-child(#{$i}) {
+                    &,
+                    & ~ .column {
+                        width: calc(#{percentage(1/$i)} - #{$padding});
+                        @include makeStatus();
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,83 @@
+@mixin makeStatus() {
+    .status {
+        font-family: sans-serif;
+        border: solid 1px black;
+        .media {
+            box-sizing: border-box;
+            position: relative;
+            .thumbnail {
+                $mediaSize: 100%;
+                float: left;
+                margin-left: 5px;
+                &:first-child {
+                    &:nth-last-child(1), &:nth-last-child(2) {
+                        &, & ~ .thumbnail {
+                            width:  $mediaSize;
+                            height: $mediaSize;
+                        }
+                    }
+                    &:nth-last-child(3), &:nth-last-child(4) {
+                        &, & ~ .thumbnail {
+                            width:  $mediaSize / 2;
+                            height: $mediaSize / 2;
+                        }
+                    }
+                }
+            }
+        }
+        .footer {
+            height: 15pt + 2px;
+            .actions {
+                float: left;
+                .action {
+                    font-size: 15pt
+                }
+            }
+            .created_at {
+                float: right;
+                font-size: 10pt;
+                color: #111;
+            }
+        }
+
+        
+
+        
+        .header {
+            .left {
+                margin-right: auto;
+                .account-username {
+                    color: lightblue;
+                }
+                .account-display_name {
+                    color: grey;
+                }
+            }
+
+            .right {
+                margin-left: auto;
+                .account-host {
+                    color: grey;
+                }
+            }
+        }
+    }
+
+    .status-even {
+        background: white;
+        color: black;
+    }
+
+    .status-odd {
+        background: lightcyan;
+    }
+}
+
+
+    
+        
+
+            
+
+        
+

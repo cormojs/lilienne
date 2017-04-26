@@ -1,20 +1,32 @@
 import { assigned, sealed, filled } from './decorators'
+import * as fs from 'fs';
+import * as path from 'path';
+
 export class Column {
-    public title: String;
-    public id: Number;
+    title: string;
+    id: number;
     private _statuses: Status[] = [];
 
-    public constructor(id: Number, title: String) {
-        this.id = id;
+    constructor(title: string) {
         this.title = title;
     }
 
-    public get statuses(): Status[] {
+    get statuses(): Status[] {
         return this._statuses;
     }
 
-    public set statuses(s: Status[]) {
+    set statuses(s: Status[]) {
         this._statuses = s;
+    }
+
+    save(dir: string) {
+        let d = new Date();
+        let datetime = `${d.toLocaleDateString()}-${d.toLocaleTimeString()}`
+            .replace(/\//g, "")
+            .replace(/:/g, "");
+        let filename = path.join(process.cwd(), dir, `${datetime}.json`);
+        fs.writeFileSync(filename, JSON.stringify(this.statuses));
+        console.log(`Toots saved to ${filename}`);
     }
 }
 
@@ -25,37 +37,47 @@ export class Registration {
     id: number;
     client_id: string;
     client_secret: string;
-    constructor(obj: object) {}
+    constructor(obj: object) { }
 };
 
 export type Stream = undefined;
-export let Stream: Stream = null;
+export let Stream: Stream = undefined;
 
 @assigned
 @sealed
 export class REST {
     update_min: number | null;
+    auto_page: number;
+    constructor(obj: object) { }
 }
 
-export let isREST = function (form: Stream | REST): form is REST {
-    return form && 'update_min' in form;
+export let isREST = function(form: Stream | REST): form is REST {
+    return form !== undefined && 'update_min' in form && 'auto_page' in form;
 };
 
-export type API = {
-    form: Stream | REST,
+export type Query = { key?: string | boolean | number };
+
+export type API<T> = {
+    form: T,
     name: string,
-    query: { key?: string | boolean }
+    query: Query
 };
+
+export let isRESTAPI = function(api: API<REST | Stream>): api is API<REST> {
+    return isREST(api.form);
+}
+
+export type Connection = { token: string, host: string }
 
 @filled
 @assigned
 @sealed
 export class Source {
     name: string;
-    connection: { token: string, host: string };
+    connection: Connection;
     filters: string[];
-    api: API;
-    constructor(obj: object) {}
+    api: API<REST | Stream>;
+    constructor(obj: object) { }
 }
 
 @filled
@@ -77,6 +99,10 @@ export class Account {
     avatar_static: string;
     header: string;
     header_static: string;
+    get host(): string {
+        let m = this.acct.match(/@(.+)$/);
+        return m ? m[1] : "";
+    }
 }
 
 export type MastNotification = object;

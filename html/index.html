@@ -3,14 +3,13 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Timeline Test</title>
-  <link rel="stylesheet" type="text/css" href="../css/status.css" />
+  <title>Lilienne</title>
+  <link href="../build/main.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet" />
 </head>
 
 <body>
-  <h1>Test</h1>
   <div id="lilienne">
     <form @submit.prevent="register">
       <input v-model.trim="hostInput" placeholder="example.com"></input>
@@ -54,13 +53,8 @@
       </form>
     </div>
     <div id="columns">
-      <div class="column" v-for="(c, i) in columns" :key="i">
-        <button @click="saveToots(c)">Save Toots</button>
-        <div class="column-header">{{ c.title }}</div>
-        <div class="scrollable">
-          <status v-for="status in c.statuses" :key="status.id" :status="status"></status>
-        </div>
-      </div>
+      <column v-for="(column, i) in columns" :key="i" :column="column">
+      </column>
     </div>
   </div>
   <script src="../build/build.js"></script>

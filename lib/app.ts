@@ -6,10 +6,12 @@ import {
     Source,
     Stream,
     REST,
-    isREST,
+    isRESTAPI,
     MastNotification,
     Delete,
-    API
+    API,
+    Connection,
+    Query
 } from './defs';
 import { AppConfig } from './config';
 import * as fs from 'fs';
@@ -18,6 +20,7 @@ import { EventEmitter } from 'events';
 
 
 export class App {
+    public static saveDir = "saved/";
     public static appName = "Lilienne";
     public static timeout_ms = 60 * 1000;
     public static filters = {
@@ -31,7 +34,7 @@ export class App {
         }
     }
 
-    public static availableAPI: { name?: API } = <{ name?: API }>{
+    public static availableAPI: { name?: API<REST | Stream> } = <{ name?: API<REST | Stream> }>{
         "User Stream": {
             form: Stream,
             name: "streaming/user",
@@ -43,20 +46,20 @@ export class App {
             query: {}
         },
         "REST Public(local) per 1 min": {
-            form: { update_min: 1 },
+            form: new REST({ update_min: 1, auto_page: 1 }),
             name: "timelines/public",
             query: { "local": true }
         },
         "REST Home(once)": {
-            form: { update_min: null },
+            form: new REST({ update_min: null, auto_page: 1 }),
             name: "timelines/home"
         },
         "REST cormojs": {
-            form: { update_min: null },
+            form: new REST({ update_min: null, auto_page: 2 }),
             name: "accounts/7832/statuses"
         },
         "REST Favs": {
-            form: { update_min: null },
+            form: new REST({ update_min: null, auto_page: 20 }),
             name: "favourites"
         }
     };
@@ -120,7 +123,7 @@ export class App {
         }
     }
 
-    public mastodon(conn: { token: string, host: string }, timeout_ms: number): Mast {
+    public mastodon(conn: { token: string, host: string }, timeout_ms?: number): Mast {
         return new Mast({
             access_token: conn.token,
             timeout_ms: timeout_ms,
@@ -128,40 +131,68 @@ export class App {
         });
     }
 
-    public subscribe(source: Source, ss: Status[]): EventEmitter {
-        if (isREST(source.api.form)) {
-            let push = () => {
-                this
-                    .mastodon(source.connection, App.timeout_ms)
-                    .get(source.api.name, source.api.query)
-                    .catch(e => console.error(e))
-                    .then(res => {
-                        console.log(res);
-                        for (let s of res.data.sort((s1, s2) => s1.id - s2.id)) {
-                            if (!ss.some(_s => s.id === _s.id)) {
-                                ss.unshift(s);
+    private subscribeREST(conn: Connection, api: API<REST>, ss: Status[]) {
+        let push = (query: Query): Promise<Query> => {
+            return this
+                .mastodon(conn, App.timeout_ms)
+                .get(api.name, query)
+                .catch(e => console.error(e))
+                .then((res: { resp: object, data: Status[] }) => {
+                    if (!res.data || res.data.length === 0) {
+                        return new Promise((r, e) => r(undefined));
+                    } else {
+                        let sorted = res.data.sort((s1, s2) => s2.id - s1.id);
+                        for (let status of sorted) {
+                            if (ss.every(s => s.id !== status.id)) {
+                                ss.push(status);
                             }
                         }
-                    });
-            };
-            let update_min = source.api.form.update_min;
-            if (update_min) {
-                setInterval(push, update_min * 60 * 1000);
+                        return new Promise((resolve, reject) => {
+                            let link = res.resp['headers']['link'];
+                            let test = link ? link.match(/^<[^<>?]+\?max_id=([0-9]+)>/) : [];
+
+                            if (test && test.length > 1) {
+                                let id = parseInt(test[1]);
+                                let q = query;
+                                q['max_id'] = id;
+                                return resolve(q);
+                            } else {
+                                return resolve(undefined);
+                            }
+                        });
+                    }
+                });
+        }
+        let rec = (query: Query, n: number): Promise<void> => {
+            if (n === 0) {
+                return new Promise<void>((r, _) => {});
             } else {
-                push();
+                return push(query).then<void>(newQuery => {
+                    if (newQuery) {
+                        setTimeout(() => rec(newQuery, n - 1), 1000);
+                    } else {
+                        console.log('Pagination Completed');
+                    }
+                });
             }
-            return undefined;
+        };
+        rec(api.query !== undefined ? api.query : {}, api.form.auto_page);
+    }
+
+    public subscribe(source: Source, ss: Status[]) {
+        if (isRESTAPI(source.api)) {
+            this.subscribeREST(source.connection, source.api, ss);
         } else {
             let s = this
-                .mastodon(source.connection, undefined)
+                .mastodon(source.connection)
                 .stream(source.api.name, source.api.query);
             s.on('error', e => console.error(`Streaming Error: ${e}`));
             s.on('message', obj => console.log(obj));
             s.on('message', (msg: { event: "update" | "delete" | "notification", data: (Status | MastNotification | Delete) }) => {
                 if (msg.event === "update") {
                     let _status = <Status>msg.data;
-                    let status = _status.reblog ? _status.reblog : _status;
-                    let selecteds = [].concat(source.filters);
+                    let status = _status.reblog !== undefined ? _status.reblog : _status;
+                    let selecteds = (<string[]>[]).concat(source.filters);
                     let judge = selecteds.length !== 0
                         ? selecteds
                             .map(name => App.filters[name])
@@ -178,7 +209,6 @@ export class App {
                     console.log(msg.event);
                 }
             });
-            return s;
         }
     }
 }

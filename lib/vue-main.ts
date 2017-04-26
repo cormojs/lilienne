@@ -1,13 +1,52 @@
 import Vue from 'vue';
-import { Column, MastNotification, Delete, Status, Source, Stream, API } from './defs';
+import { Column, MastNotification, Delete, Status, Source, Stream, REST, API } from './defs';
 import { MastUtil } from './mastutil';
 import * as fs from 'fs';
 import * as path from 'path';
 import { App } from './app';
 import { AppConfig } from './config';
 
-let statusApp = require('./templates/status');
+
 let configFile = path.join(process.cwd(), 'lilienne.json');
+
+let statusApp = require('./templates/status');
+let columnApp = {
+    components: {
+        status: statusApp,
+    },
+    template: `
+      <div class="column" :value="columnSize" @resize="() => { columnSize = getSize() }" >
+        <button @click="saveToots(column)">Save Toots</button>
+        <div class="header">{{ column.title }}</div>
+        <div class="scrollable">
+          <status v-for="(status, index) in column.statuses" :key="index"
+                  :index="index" :status="status" :column-size="columnSize"></status>
+        </div>
+      </div>
+    `,
+    props: ['column'],
+    data: function () {
+        return {
+            columnSize: {
+                width: 300,
+                height: 300
+            }
+        };
+    },
+    methods: {
+        getSize() {
+            console.log('columnApp resized');
+            let el = (<Vue>this).$el;
+            return {
+                width: el.offsetWidth,
+                height: el.offsetHeight
+            };
+        },
+        saveToots: function () {
+            (<Column>this['column']).save(App.saveDir);
+        }
+    }
+};
 
 let vm = new Vue({
     el: "#lilienne",
@@ -35,7 +74,7 @@ let vm = new Vue({
         }
     },
     components: {
-        status: statusApp
+        column: columnApp
     },
     methods: {
         initilize: function () {
@@ -45,22 +84,13 @@ let vm = new Vue({
                 .reduce((promise, acc) => {
                     return promise.then(() => app.fetchAccount(acc));
                 }, new Promise<any>((r, e) => r()))
-                .then(() => { 
+                .then(() => {
                     this['showAddColumn'] = true;
                 });
         },
         saveConfig: function () {
             (<App>this['app']).config.save(configFile);
             console.log("Configuration Saved");
-        },
-        saveToots: function (column: Column) {
-            let d = new Date();
-            let datetime = `${d.toLocaleDateString()}-${d.toLocaleTimeString()}`
-                .replace(/\//g, "")
-                .replace(/:/g, "");
-            let filename = path.join(process.cwd(), "/saved/", `${datetime}.json`);
-            fs.writeFileSync(filename, JSON.stringify(column.statuses));
-            console.log(`Toots saved to ${filename}`);
         },
         register: function () {
             let showAuthUrl = reg => {
@@ -113,7 +143,7 @@ let vm = new Vue({
                 console.error('No authorization code input.')
             }
         },
-        addSource: function (conn: { token: string, host: string }, api: API, filters: string[]) {
+        addSource: function (conn: { token: string, host: string }, api: API<REST | Stream>, filters: string[]) {
             let source = {
                 name: `${api.name} in ${conn.host}`,
                 connection: conn,
@@ -124,14 +154,10 @@ let vm = new Vue({
         },
         addColumn: function (name: string, sources: Source[]) {
             let app = <App>this['app'];
-            let ss = [];
-            this['columns'].push({
-                title: name,
-                statuses: ss
-            });
+            let column = new Column(name);
+            this['columns'].push(column);
             for (let source of sources) {
-                console.log(source);
-                window['debug'].streams[source.name] = app.subscribe(source, ss);
+                window['debug'].streams[source.name] = app.subscribe(source, column.statuses);
             }
         }
     },
