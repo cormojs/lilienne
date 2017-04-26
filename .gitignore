@@ -3,4 +3,5 @@ node_modules/
 main.js
 lilienne.json
 saved/*json
-build/build.js
+build/
+build/*
