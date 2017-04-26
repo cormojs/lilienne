@@ -105,14 +105,16 @@ export class App {
         console.log(`Fetching ${acc.token} of ${acc.host}`);
         let fetched: { host: string, account: Account } = this.fetchedAccounts[acc.token]
         if (!fetched) {
-            return new Mast({
+            let m: Mast = new Mast({
                 access_token: acc.token,
                 timeout_ms: App.timeout_ms,
                 api_url: 'https://' + acc.host + '/api/v1/'
-            })
+            });
+            return m
                 .get("accounts/verify_credentials")
                 .catch(e => console.log(`Error while fetching account: ${e}`))
                 .then(res => {
+                    if (!res) return;
                     let account = <Account>res.data;
                     console.log(`Fetched acccount: ${account.username}@${acc.host}`);
                     this.fetchedAccounts[acc.token] = {
@@ -137,17 +139,17 @@ export class App {
                 .mastodon(conn, App.timeout_ms)
                 .get(api.name, query)
                 .catch(e => console.error(e))
-                .then((res: { resp: object, data: Status[] }) => {
-                    if (!res.data || res.data.length === 0) {
-                        return new Promise((r, e) => r(undefined));
+                .then<Query>((res: { resp: object, data: Status[] }) => {
+                    if (!res || !res.data || res.data.length === 0) {
+                        return new Promise<Query>((r, e) => r(undefined));
                     } else {
                         let sorted = res.data.sort((s1, s2) => s2.id - s1.id);
                         for (let status of sorted) {
                             if (ss.every(s => s.id !== status.id)) {
-                                ss.push(status);
+                                ss.push(new Status(status));
                             }
                         }
-                        return new Promise((resolve, reject) => {
+                        return new Promise<Query>((resolve, reject) => {
                             let link = res.resp['headers']['link'];
                             let test = link ? link.match(/^<[^<>?]+\?max_id=([0-9]+)>/) : [];
 

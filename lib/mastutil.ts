@@ -9,6 +9,7 @@ export namespace MastUtil {
     export const apiBase = '/api/v1/';
     export function publicTimeline(obj): Promise<Object> {
         let token = fs.readFileSync('./token.dat', 'utf8').replace(/\n/, "");
+        let Mas = function(config: object) {};
         let m = new Mast({
             access_token: token,
             timeout_ms: 60 * 1000,
@@ -31,15 +32,5 @@ export namespace MastUtil {
 
     export function getAccessToken(r: Registration, host: string, code: string): Promise<string> {
         return Mast.getAccessToken(r.client_id, r.client_secret, code, 'https://' + host);
-    }
-
-    export class Mastodon extends Mast {
-        public publicStream(params): EventEmitter {
-            return super.stream("streaming/public", params)
-        }
-
-        public constructor(config) {
-            super(config);
-        }
     }
 }

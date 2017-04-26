@@ -10,7 +10,7 @@
             <span class="account-host">{{ status.account.host }}</span>
           </span>
         </div>
-        <div class="content" v-html="status.content"></div>
+        <div class="content" v-html="status.contentSanitized"></div>
         <div v-if="status.media_attachments.length !== 0" class="media"
              :style="mediaSize">
           <div v-for="(media, i) in status.media_attachments" :key="i"

@@ -1,6 +1,7 @@
-import { assigned, sealed, filled } from './decorators'
+import { assigned, sealed, filled, Asserted, NotNull } from './decorators'
 import * as fs from 'fs';
 import * as path from 'path';
+import * as sanitizeHtml from 'sanitize-html';
 
 export class Column {
     title: string;
@@ -51,7 +52,7 @@ export class REST {
     constructor(obj: object) { }
 }
 
-export let isREST = function(form: Stream | REST): form is REST {
+export let isREST = function (form: Stream | REST): form is REST {
     return form !== undefined && 'update_min' in form && 'auto_page' in form;
 };
 
@@ -63,7 +64,7 @@ export type API<T> = {
     query: Query
 };
 
-export let isRESTAPI = function(api: API<REST | Stream>): api is API<REST> {
+export let isRESTAPI = function (api: API<REST | Stream>): api is API<REST> {
     return isREST(api.form);
 }
 
@@ -80,11 +81,13 @@ export class Source {
     constructor(obj: object) { }
 }
 
-@filled
+@Asserted
+// @filled
 @assigned
-@sealed
 export class Account {
+    @NotNull
     id: number;
+    @NotNull
     username: string;
     acct: string;
     display_name: string;
@@ -103,6 +106,7 @@ export class Account {
         let m = this.acct.match(/@(.+)$/);
         return m ? m[1] : "";
     }
+    constructor(obj: object) {}
 }
 
 export type MastNotification = object;
@@ -119,12 +123,36 @@ export type Tag = {
     name: string,
     url: string
 };
-export type Status = {
-    account: object,
-    id: number,
-    sensitive: boolean,
-    media_attachments: Attachment[],
-    reblog?: Status,
-    url: string,
-    tags: Tag[]
+
+
+@Asserted
+// @filled
+@assigned
+export class Status {
+    @NotNull
+    account: Account;
+    @NotNull
+    id: number;
+    sensitive: boolean;
+    media_attachments: Attachment[];
+    reblog?: Status;
+    @NotNull
+    url: string;
+    tags: Tag[];
+    content: string;
+
+    constructor(obj: object) {
+    }
+    get contentSanitized(): string {
+         return sanitizeHtml(this.ownStatus.content, {
+             allowedTags: ['a'],
+             allowedAttributes: {
+                 'a': [ 'href' ]
+             }
+         });
+     }
+
+     get ownStatus(): Status {
+         return this.reblog ? new Status(this.reblog) : this;
+     }
 };

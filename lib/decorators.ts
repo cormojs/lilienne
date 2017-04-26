@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 interface Newable<T> {
     new (...args: any[]): T
 };
@@ -19,7 +21,7 @@ export function sealed(ctor: Function) {
 };
 
 export function filled(ctor: Newable<object>) {
-    class filledClass extends ctor {
+    return <any>class filledClass extends ctor {
         constructor(...args: any[]) {
             super(...args);
             for (let key in this) {
@@ -37,4 +39,27 @@ export function assigned(ctor: Newable<object>) {
         }
     }
     return (<any>assignedClass);
+}
+const assertionKey = Symbol('assertion');
+
+export function Asserted(ctor: Newable<object>) {
+    return <any>class AssertedClass extends ctor {
+        constructor(obj: object) {
+            super(obj);
+            for (let key in this) {
+                let fn = Reflect.getMetadata(assertionKey, this, key);
+                if (fn) {
+                    console.assert(fn(this[key]));
+                }
+            }
+        }
+    }
+}
+
+export function NotNull(target: any, key: string | symbol): void {
+    Reflect.defineMetadata(assertionKey, (v): boolean => v, target, key);
+    Object.defineProperty(target, key, {
+        enumerable: true,
+        writable: true
+    });
 }
