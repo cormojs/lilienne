@@ -4,12 +4,13 @@
         "target": "es6",
         "noImplicitAny": false,
         "sourceMap": false,
-        "typeRoots": ["node_modules/@types"],
+        "typeRoots": ["node_modules/@types", "types"],
         "outDir": "./build/",
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
         "alwaysStrict": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "emitDecoratorMetadata": true
     },
     "include": [
         "./lib/**/*"
