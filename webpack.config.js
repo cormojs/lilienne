@@ -20,7 +20,13 @@ module.exports = [{
     module: {
         loaders: [
             { test: /\.vue$/, loader: 'vue-loader' },
-            { test: /\.ts$/, loader: 'ts-loader' },
+            {
+                test: /\.ts$/,
+                loader: 'ts-loader',
+                options: {
+                    appendTsSuffixTo: [/\.vue$/]
+                }
+            },
             {
                 test: /\.scss$/,
                 use: extractSass.extract({
