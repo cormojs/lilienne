@@ -32,7 +32,7 @@
         </select>
         <select v-model="selectedAPI">
           <option disabled value="">Select API</option>
-          <option v-for="(api, name, i) in availableAPI" :key="i" :value="api">{{ name }}</option>
+          <option v-for="(api, name, i) in app.config.allApi" :key="i" :value="api">{{ name }}</option>
         </select>
         <div>
           <span v-for="(filter, name) in filters" :key="name">

@@ -1,17 +1,29 @@
-import { Registration, Source } from './defs';
+import { Registration, Source, API, REST, Stream } from './defs';
 import { monitored } from './decorators';
 import * as fs from 'fs';
+import * as path from 'path';
 
 
 @monitored
-export class AppConfig {
+export default class AppConfig {
+    public static saveDir: string = "saved/";
+    public static appName: string = "Lilienne";
+    public static configJson: string = "lilienne.json";
+    public static apiJson: string = "api.json";
+
     public registrations: { host?: Registration } = {};
     public accounts: { token: string, host: string }[] = [];
     public sources: Source[] = [];
+    public configFile: string;
+    public allApi: { name?: API<REST | Stream> } = (() => {
+        let data: string = fs.readFileSync(path.join(process.cwd(), AppConfig.apiJson), 'utf8');
+        return JSON.parse(data);
+    })();
 
 
-    constructor(filename: string) {
-        let content = fs.readFileSync(filename, 'utf8');
+    constructor(name: string = AppConfig.configJson) {
+        this.configFile = path.join(process.cwd(), name);
+        let content = fs.readFileSync(this.configFile, 'utf8');
         if (content) {
             let config = JSON.parse(content);
             this.registrations = AppConfig.construct(config['registrations'], Registration);
@@ -25,13 +37,14 @@ export class AppConfig {
         }
     }
 
-    public save(filename: string) {
+
+    public save(filename?: string) {
         let config = {
             registrations: this.registrations,
             accounts: this.accounts,
             sources: this.sources
         };
-        fs.writeFileSync(filename, JSON.stringify(config));
+        fs.writeFileSync(filename || this.configFile, JSON.stringify(config, null, 4));
     }
 
     private static construct<T, R>(obj: { key?: T }, ctor: new (T) => R)

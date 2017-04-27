@@ -13,15 +13,13 @@ import {
     Connection,
     Query
 } from './defs';
-import { AppConfig } from './config';
+import AppConfig from './config';
 import * as fs from 'fs';
 import * as Mast from 'mastodon-api';
 import { EventEmitter } from 'events';
-
+import * as path from 'path'
 
 export class App {
-    public static saveDir = "saved/";
-    public static appName = "Lilienne";
     public static timeout_ms = 60 * 1000;
     public static filters = {
         lolie: {
@@ -34,35 +32,7 @@ export class App {
         }
     }
 
-    public static availableAPI: { name?: API<REST | Stream> } = <{ name?: API<REST | Stream> }>{
-        "User Stream": {
-            form: Stream,
-            name: "streaming/user",
-            query: {}
-        },
-        "Public Stream": {
-            form: Stream,
-            name: "streaming/public",
-            query: {}
-        },
-        "REST Public(local) per 1 min": {
-            form: new REST({ update_min: 1, auto_page: 1 }),
-            name: "timelines/public",
-            query: { "local": true }
-        },
-        "REST Home(once)": {
-            form: new REST({ update_min: null, auto_page: 1 }),
-            name: "timelines/home"
-        },
-        "REST cormojs": {
-            form: new REST({ update_min: null, auto_page: 2 }),
-            name: "accounts/7832/statuses"
-        },
-        "REST Favs": {
-            form: new REST({ update_min: null, auto_page: 20 }),
-            name: "favourites"
-        }
-    };
+    
 
     public config: AppConfig;
     public fetchedAccounts: { token?: { account: Account, host: string } } = {};
@@ -72,14 +42,14 @@ export class App {
 
     public registerToHost(host: string): Promise<Registration> {
         return MastUtil
-            .createApp(host, App.appName)
+            .createApp(host, AppConfig.appName)
             .then(reg => {
                 this.config.registrations[host] = reg;
                 return reg;
             });
     }
 
-    public constructor(config: AppConfig) {
+    public constructor(config: AppConfig = new AppConfig()) {
         this.config = config;
     }
 
@@ -203,8 +173,8 @@ export class App {
             });
             s.on('delete', d => console.log("delete", d));
             s.on('notification', d => console.log('notification', d))
-            s.on('message', (msg: { event: "update" | "delete" | "notification", data: string }) => {
-                if (msg.event === "update") {
+            // s.on('message', (msg: { event: "update" | "delete" | "notification", data: string }) => {
+            //     if (msg.event === "update") {
                 // let selecteds = (<string[]>[]).concat(source.filters);
 
                     // let judge = selecteds.length !== 0
@@ -219,10 +189,10 @@ export class App {
                     // } else {
                     //     console.log(`Dropped ${status.url}`);
                     // }
-                } else {
-                    console.log(msg.event, JSON.parse(msg.data));
-                }
-            });
+            //     } else {
+            //         console.log(msg.event, JSON.parse(msg.data));
+            //     }
+            // });
         }
     }
 }
