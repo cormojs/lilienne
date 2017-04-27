@@ -3,33 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as sanitizeHtml from 'sanitize-html';
 
-export class Column {
-    title: string;
-    id: number;
-    private _statuses: Status[] = [];
-
-    constructor(title: string) {
-        this.title = title;
-    }
-
-    get statuses(): Status[] {
-        return this._statuses;
-    }
-
-    set statuses(s: Status[]) {
-        this._statuses = s;
-    }
-
-    save(dir: string) {
-        let d = new Date();
-        let datetime = `${d.toLocaleDateString()}-${d.toLocaleTimeString()}`
-            .replace(/\//g, "")
-            .replace(/:/g, "");
-        let filename = path.join(process.cwd(), dir, `${datetime}.json`);
-        fs.writeFileSync(filename, JSON.stringify(this.statuses));
-        console.log(`Toots saved to ${filename}`);
-    }
-}
 
 @filled
 @assigned
@@ -58,10 +31,10 @@ export let isREST = function (form: any): form is REST {
 
 export type Query = { key?: string | boolean | number };
 
-export type API<T> = {
-    form: T,
-    name: string,
-    query: Query
+export class API<T> {
+    form: T;
+    name: string;
+    query: Query;
 };
 
 export let isRESTAPI = function (api: API<REST | Stream>): api is API<REST> {

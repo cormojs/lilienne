@@ -1,13 +1,10 @@
 import Vue from 'vue';
-import { Column, MastNotification, Delete, Status, Source, Stream, REST, API } from './defs';
+import { MastNotification, Delete, Status, Source, Stream, REST, API } from './defs';
+import Column from './column';
 import { MastUtil } from './mastutil';
-import * as fs from 'fs';
-import * as path from 'path';
 import { App } from './app';
-import { AppConfig } from './config';
+import AppConfig from './config';
 
-
-let configFile = path.join(process.cwd(), 'lilienne.json');
 
 let statusApp = require('./templates/status');
 let columnApp = {
@@ -43,7 +40,7 @@ let columnApp = {
             };
         },
         saveToots: function () {
-            (<Column>this['column']).save(App.saveDir);
+            (<Column>this['column']).save();
         }
     }
 };
@@ -52,7 +49,7 @@ let vm = new Vue({
     el: "#lilienne",
     data: {
         columns: [],
-        app: new App(new AppConfig(configFile)),
+        app: new App(),
         authUrl: null,
         hostInput: '',
         authCode: '',
@@ -63,7 +60,6 @@ let vm = new Vue({
         columnNameInput: '',
         selectedSources: [],
         filters: App.filters,
-        availableAPI: App.availableAPI
     },
     computed: {
         getAccounts: function () {
@@ -80,6 +76,7 @@ let vm = new Vue({
         initilize: function () {
             window['debug'] = { streams: {} };
             let app = <App>this['app'];
+            
             app.config.accounts
                 .reduce((promise, acc) => {
                     return promise.then(() => app.fetchAccount(acc));
@@ -89,7 +86,7 @@ let vm = new Vue({
                 });
         },
         saveConfig: function () {
-            (<App>this['app']).config.save(configFile);
+            (<App>this['app']).config.save();
             console.log("Configuration Saved");
         },
         register: function () {
