@@ -21,7 +21,7 @@
     "electron": "^1.6.5",
     "electron-devtools-installer": "^2.2.0",
     "extract-text-webpack-plugin": "^2.1.0",
-    "mastodon-api": "^1.2.0",
+    "mastodon-api": "cormojs/mastodon-api#new-parser",
     "node-sass": "^4.5.2",
     "reflect-metadata": "^0.1.10",
     "sanitize-html": "^1.14.1",

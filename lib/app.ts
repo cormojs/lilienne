@@ -167,7 +167,7 @@ export class App {
         }
         let rec = (query: Query, n: number): Promise<void> => {
             if (n === 0) {
-                return new Promise<void>((r, _) => {});
+                return new Promise<void>((r, _) => { });
             } else {
                 return push(query).then<void>(newQuery => {
                     if (newQuery) {
@@ -188,27 +188,39 @@ export class App {
             let s = this
                 .mastodon(source.connection)
                 .stream(source.api.name, source.api.query);
-            s.on('error', e => console.error(`Streaming Error: ${e}`));
-            s.on('message', obj => console.log(obj));
-            s.on('message', (msg: { event: "update" | "delete" | "notification", data: (Status | MastNotification | Delete) }) => {
+            s.on('error', e => console.error(`Streaming Error`, e));
+            s.on('update', msg => {
+                console.log("update", msg);
+                let json = JSON.parse(msg['data']);
+
+                let status = new Status(json);
+                ss.unshift(status);
+                console.log("Toot", status);
+
+                if (status.reblog) {
+                    console.log("reblogged", status.reblog);
+                }
+            });
+            s.on('delete', d => console.log("delete", d));
+            s.on('notification', d => console.log('notification', d))
+            s.on('message', (msg: { event: "update" | "delete" | "notification", data: string }) => {
                 if (msg.event === "update") {
-                    let _status = <Status>msg.data;
-                    let status = _status.reblog !== undefined ? _status.reblog : _status;
-                    let selecteds = (<string[]>[]).concat(source.filters);
-                    let judge = selecteds.length !== 0
-                        ? selecteds
-                            .map(name => App.filters[name])
-                            .reduce((bool: boolean, filter) => {
-                                return bool || filter.fn(status);
-                            }, false)
-                        : true;
-                    if (judge) {
-                        ss.unshift(status);
-                    } else {
-                        console.log(`Dropped ${status.url}`);
-                    }
+                // let selecteds = (<string[]>[]).concat(source.filters);
+
+                    // let judge = selecteds.length !== 0
+                    //     ? selecteds
+                    //         .map(name => App.filters[name])
+                    //         .reduce((bool: boolean, filter) => {
+                    //             return bool || filter.fn(status);
+                    //         }, false)
+                    //     : true;
+                    // if (judge) {
+                    //     ss.unshift(status);
+                    // } else {
+                    //     console.log(`Dropped ${status.url}`);
+                    // }
                 } else {
-                    console.log(msg.event);
+                    console.log(msg.event, JSON.parse(msg.data));
                 }
             });
         }

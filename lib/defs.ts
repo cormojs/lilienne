@@ -41,8 +41,8 @@ export class Registration {
     constructor(obj: object) { }
 };
 
-export type Stream = undefined;
-export let Stream: Stream = undefined;
+export type Stream = any;
+export let Stream: Stream = null;
 
 @assigned
 @sealed
@@ -52,8 +52,8 @@ export class REST {
     constructor(obj: object) { }
 }
 
-export let isREST = function (form: Stream | REST): form is REST {
-    return form !== undefined && 'update_min' in form && 'auto_page' in form;
+export let isREST = function (form: any): form is REST {
+    return form !== null && form !== undefined && 'update_min' in form && 'auto_page' in form;
 };
 
 export type Query = { key?: string | boolean | number };
