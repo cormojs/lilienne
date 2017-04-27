@@ -1,0 +1,36 @@
+{
+    "User Stream": {
+        "form": null,
+        "name": "streaming/user",
+        "query": {}
+    },
+    "Public Stream": {
+        "form": null,
+        "name": "streaming/public",
+        "query": {}
+    },
+    "REST Public(local) per 1 min": {
+        "form": {
+            "update_min": 1,
+            "auto_page": 1
+        },
+        "name": "timelines/public",
+        "query": {
+            "local": true
+        }
+    },
+    "REST Home(once)": {
+        "form": {
+            "update_min": null,
+            "auto_page": 1
+        },
+        "name": "timelines/home"
+    },
+    "REST Favs": {
+        "form": {
+            "update_min": null,
+            "auto_page": 20
+        },
+        "name": "favourites"
+    }
+}
