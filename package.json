@@ -1,6 +1,6 @@
 {
   "name": "lilienne",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Desktop Mastodon Client",
   "main": "main",
   "typings": "main",
