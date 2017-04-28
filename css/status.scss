@@ -2,6 +2,15 @@
     .status {
         font-family: sans-serif;
         border: solid 1px black;
+        padding-left: 60px;
+        position: relative;
+        .avator {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 48px;
+            height: 48px;
+        }
         .media {
             box-sizing: border-box;
             position: relative;
@@ -9,13 +18,13 @@
                 $mediaSize: 300px;
                 float: left;
                 &:first-child {
-                    &:nth-last-child(1), &:nth-last-child(2) {
+                    &:nth-last-child(1) {
                         &, & ~ .thumbnail {
-                            width:  $mediaSize;
-                            height: $mediaSize;
+                            width:  $mediaSize / 2;
+                            height: $mediaSize / 2;
                         }
                     }
-                    &:nth-last-child(3), &:nth-last-child(4) {
+                    &:nth-last-child(2), &:nth-last-child(3), &:nth-last-child(4) {
                         &, & ~ .thumbnail {
                             width:  $mediaSize / 2;
                             height: $mediaSize / 2;
@@ -69,6 +78,61 @@
 
     .status-odd {
         background: lightcyan;
+    }
+
+    .status.status-big-media {
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
+        border: solid 1px black;
+        padding-left: 40px;
+        position: relative;
+        .media {
+            order: 1;
+            margin-top: 10px;
+            margin-left: -30px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 100%;
+            height: 100%;
+            .thumbnail {
+                margin-left: 5px;
+                margin-top: 5px;
+            }
+        }
+        .avatar {
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+            top: initial;
+            right: initial;
+            width: 30px;
+            height: 30px;
+            order: 5
+        }
+        .footer {
+            height: 10pt + 2px;
+            order: 4;
+            .actions {
+                float: left;
+                .action {
+                    font-size: 10pt
+                }
+            }
+            .created_at {
+                float: right;
+                font-size: 8pt;
+                color: #111;
+            }
+        }
+        .content {
+            font-size: 8pt;
+            order: 3
+        }
+        .header {
+            font-size: 8pt;
+            order: 2
+        }
     }
 }
 
