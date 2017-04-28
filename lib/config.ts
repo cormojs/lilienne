@@ -1,8 +1,8 @@
-import { Registration, Source, API, REST, Stream } from './defs';
+import { Registration, Source, API, REST, Stream, Status } from './defs';
 import { monitored } from './decorators';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import filters from './filters';
 
 @monitored
 export default class AppConfig {
@@ -19,6 +19,10 @@ export default class AppConfig {
         let data: string = fs.readFileSync(path.join(process.cwd(), AppConfig.apiJson), 'utf8');
         return JSON.parse(data);
     })();
+    public filters: { [key: string]: (s: Status) => boolean } = {
+        'has media': filters['hasMedia'][1]({}),
+        'none': _ => true
+    }
 
 
     constructor(name: string = AppConfig.configJson) {
