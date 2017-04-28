@@ -8,7 +8,8 @@ import Column from './column';
 import { MastUtil } from './mastutil';
 import { App } from './app';
 import AppConfig from './config';
-import Worker from './worker'
+import Worker from './worker';
+import filters from './filters'
 
 
 let statusApp = require('./templates/status');
@@ -18,7 +19,8 @@ let columnApp = {
     },
     template: `
       <div class="column" :value="columnSize" @resize="() => { columnSize = getSize() }" >
-        <button @click="saveToots(column)">Save Toots</button>
+        <button @click="saveToots()">Save toots</button>
+        <button @click="deleteColumn(index)">Delete column</button>
         <div class="header">{{ column.title }}</div>
         <div class="scrollable">
           <status v-for="(status, index) in column.statuses" :key="index"
@@ -26,7 +28,7 @@ let columnApp = {
         </div>
       </div>
     `,
-    props: ['column'],
+    props: ['column', 'index'],
     data: function () {
         return {
             columnSize: {
@@ -44,8 +46,11 @@ let columnApp = {
                 height: el.offsetHeight
             };
         },
-        saveToots: function () {
+        saveToots() {
             (<Column>this['column']).save();
+        },
+        deleteColumn(index: number) {
+            (<Column[]>this.$parent['column']).splice(index, 0);
         }
     }
 };
@@ -61,18 +66,9 @@ let vm = new Vue({
         showAddColumn: false,
         selectedConnection: null,
         selectedAPI: null,
-        selectedFilters: [],
+        selectedFilter: _ => true,
         columnNameInput: '',
-        selectedSources: [],
-        filters: App.filters,
-    },
-    computed: {
-        getAccounts: function () {
-            return (<App>this['app']).fetchedAccounts;
-        },
-        getSources: function () {
-            return (<App>this['app']).config.sources;
-        }
+        selectedSource: null
     },
     components: {
         column: columnApp
@@ -135,13 +131,14 @@ let vm = new Vue({
                     .then(acc => {
                         if (acc) {
                             console.log(`Added an account successfully: ${acc.token} of ${acc.host}`);
-                            app.fetchAccount(acc);
+                            return app.fetchAccount(acc);
                         } else {
                             console.error(`Couldn't get access token.`);
                         }
+                    }).then(_ => {
+                        this.$forceUpdate();
                     });
             } else {
-                1
                 console.error('No authorization code input.')
             }
         },
@@ -154,32 +151,34 @@ let vm = new Vue({
             };
             (<App>this['app']).config.sources.push(source);
         },
-        addColumn: function (name: string, sources: Source[]) {
+        addColumn: function (name: string, source: Source, selectedFilter: Function) {
             let app = <App>this['app'];
-            let column = new Column(name);
+            let column = new Column(name, source);
             this['columns'].push(column);
-            for (let source of sources) {
-                let columnSettings: ColumnSettings =
-                    isRESTAPI(source.api)
-                        ? {
-                            method: 'push',
-                            filter: (s: Status) => column.statuses.every(s1 => s1.id !== s.id),
-                            compare: (s1, s2) => s2.id - s1.id
-                        } : {
-                            method: 'unshift'
-                        };
-                let worker = new Worker(app)
-                worker.subscribe({
-                    api: source.api,
-                    conn: source.connection,
-                    handlers: {
-                        update: [
-                            Worker.columnHandler(column, columnSettings),
-                            Worker.consoleLogger()
-                        ]
-                    }
-                });
-            }
+            let unique = (s: Status) => column.statuses.every(s1 => s1.id !== s.id);
+            let [{ }, hasMedia] = filters.hasMedia;
+            let filter = (s: Status) => [selectedFilter].every(f => f(s.actual))
+            let columnSettings: ColumnSettings =
+                isRESTAPI(source.api)
+                    ? {
+                        method: 'push',
+                        filter: filter,
+                        compare: (s1, s2) => s2.id - s1.id
+                    } : {
+                        method: 'unshift',
+                        filter: filter
+                    };
+            let worker = new Worker(app)
+            worker.subscribe({
+                api: source.api,
+                conn: source.connection,
+                handlers: {
+                    update: [
+                        Worker.columnHandler(column, columnSettings),
+                        Worker.consoleLogger()
+                    ]
+                }
+            });
         }
     },
     mounted: function () {
