@@ -9,6 +9,11 @@
         "name": "streaming/public",
         "query": {}
     },
+    "Local Stream": {
+        "form": null,
+        "name": "streaming/public/local",
+        "query": {}
+    },
     "REST Public(local) per 1 min": {
         "form": {
             "update_min": 1,
