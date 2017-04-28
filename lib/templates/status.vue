@@ -1,63 +1,98 @@
 <template>
-    <div class="status" :class="{ 'status-even': isEven, 'status-odd': !isEven }">
-        <span class="avator"></span>
-        <div class="header">
-          <span class="left">
-            <span class="account-username">{{ status.account.username }}</span>
-            <span class="account-display_name">{{ status.account.display_name }}</span>
-          </span>
-          <span class="right">
-            <span class="account-host">{{ status.account.host }}</span>
-          </span>
-        </div>
-        <div class="content" v-html="status.contentSanitized"></div>
-        <div v-if="status.media_attachments.length !== 0" class="media"
-             :style="mediaSize">
-          <div v-for="(media, i) in status.media_attachments" :key="i"
-               class="thumbnail"
-               :style="mediaBackground(media)"></div>
-        </div>
-        <div class="footer">
-          <span class="actions">
-            <i class="action material-icons">chat_bubble_outline</i>
-            <i class="action material-icons">cached</i>
-            <i class="action material-icons">favorite_border</i>
-            <i class="action material-icons" @click="copy(status)">content_copy</i>
-          </span>
-          <span class="created_at">{{ new Date(status.created_at).toLocaleString() }}</span>
-        </div>
-      </div>
+  <div class="status" :class="styles">
+    <div class="avatar" :style="avatarStyle(actual)"></div>
+    <div class="header">
+      <span class="left">
+                <span class="account-username">{{ actual.account.username }}</span>
+      <span class="account-display_name">{{ actual.account.display_name }}</span>
+      </span>
+      <span class="right">
+                <span class="account-host">{{ actual.account.host }}</span>
+      </span>
+    </div>
+    <div class="content" v-html="actual.contentSanitized"></div>
+    <div v-if="actual.media_attachments.length !== 0" class="media">
+      <div v-for="(media, i) in actual.media_attachments" :key="i" class="thumbnail" :style="thumbnailStyle(media)"></div>
+    </div>
+    <div class="footer">
+      <span class="actions">
+                <i class="action material-icons">chat_bubble_outline</i>
+                <i class="action material-icons">cached</i>
+                <i class="action material-icons" @click="fav(actual)">favorite_border</i>
+                <i class="action material-icons" @click="copy(status)">content_copy</i>
+              </span>
+      <span class="created_at">{{ new Date(actual.created_at).toLocaleString() }}</span>
+    </div>
+  </div>
 </template>
 
 <script>
 import { clipboard } from 'electron';
 export default {
-  props: [ "status", "index", 'columnSize' ],
+  props: ["status", "index", 'columnSize'],
+  data: function () {
+    return {
+      bigMediaMode: true
+    };
+  },
   computed: {
-    isEven: function() {
-      return this['index'] % 2 === 0;
+    actual() {
+      return this.status.actual;
     },
-    mediaSize: function() {
-      console.log(this.columnSize);
-      let size = Math.min(300, this.columnSize.width) + 'px';
+    mediaSize() {
+      return this.bigMediaMode ? 300 : 150;
+    },
+    mediaBoxStyle: function () {
+      // let height = this.status.media_attachments.length <= 2
+      //   ? this.mediaSize : this.mediaSize * 2;
+      // return {
+      //   'width': '100%',
+      //   'height': height + 'px'
+      // };
+      return {};
+    },
+    styles() {
+      let isEven = this.index % 2 === 0;
       return {
-        'width': size,
-        'height': size
+        'status-even': isEven,
+        'status-odd': !isEven,
+        'status-big-media': this.bigMediaMode
       };
     }
   },
   methods: {
-    log: status => console.log(status),
-    copy: status => clipboard.writeText(JSON.stringify(status)),
-    mediaBackground: function(media) {
-      let width = 100 / this.status.media_attachments.length;
+    avatarStyle: function (s) {
+      console.log("avator", s);
       return {
-//          'width': (width * 0.9).toString() + '%',
-          'background-image': `url(${media.preview_url})`,
-          'background-repeat': 'no-repeat',
-          'background-size': 'cover',
-          'background-position': 'center middle'
+        'background-image': `url(${s.account.avatar_static})`,
+        'background-repeat': 'no-repeat',
+        'background-size': 'cover'
       };
+    },
+    log() {
+      console.log(this.status);
+    },
+    copy(s) {
+      clipboard.writeText(JSON.stringify(s));
+    },
+    thumbnailStyle: function (media) {
+      return {
+        //          'width': (width * 0.9).toString() + '%',
+        'background-image': `url(${media.preview_url})`,
+        'background-repeat': 'no-repeat',
+        'background-size': 'cover',
+        'background-position': 'center middle',
+        'width': this.mediaSize + 'px',
+        'height': this.mediaSize + 'px',
+      };
+    },
+    fav(s) {
+      let m = this.$parent.$parent.app.mastodon(this.$parent.column.source.connection);
+      console.log("fav'ing", m);
+      m
+        .post("statuses/:id/favourite", { id: s.id })
+        .catch(err => console.error(err))
+        .then(data => console.log("faved"));
     }
   }
 };
