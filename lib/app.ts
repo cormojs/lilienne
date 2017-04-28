@@ -95,7 +95,7 @@ export class App {
         }
     }
 
-    public mastodon(conn: { token: string, host: string }, timeout_ms?: number): Mast {
+    public mastodon(conn: Connection, timeout_ms?: number): Mast {
         return new Mast({
             access_token: conn.token,
             timeout_ms: timeout_ms,
@@ -103,22 +103,17 @@ export class App {
         });
     }
 
-    private subscribeREST(conn: Connection, api: API<REST>, ss: Status[]) {
+    public subscribeREST(conn: Connection, api: API<REST>, callback: (err: any, ...ss: Status[]) => void) {
         let push = (query: Query): Promise<Query> => {
             return this
                 .mastodon(conn, App.timeout_ms)
                 .get(api.name, query)
-                .catch(e => console.error(e))
+                .catch(e => callback(e))
                 .then<Query>((res: { resp: object, data: Status[] }) => {
                     if (!res || !res.data || res.data.length === 0) {
                         return new Promise<Query>((r, e) => r(undefined));
                     } else {
-                        let sorted = res.data.sort((s1, s2) => s2.id - s1.id);
-                        for (let status of sorted) {
-                            if (ss.every(s => s.id !== status.id)) {
-                                ss.push(new Status(status));
-                            }
-                        }
+                        callback(null, ...res.data.map(d => new Status(d)))
                         return new Promise<Query>((resolve, reject) => {
                             let link = res.resp['headers']['link'];
                             let test = link ? link.match(/^<[^<>?]+\?max_id=([0-9]+)>/) : [];
@@ -151,28 +146,11 @@ export class App {
         rec(api.query !== undefined ? api.query : {}, api.form.auto_page);
     }
 
-    public subscribe(source: Source, ss: Status[]) {
-        if (isRESTAPI(source.api)) {
-            this.subscribeREST(source.connection, source.api, ss);
-        } else {
-            let s = this
-                .mastodon(source.connection)
-                .stream(source.api.name, source.api.query);
-            s.on('error', e => console.error(`Streaming Error`, e));
-            s.on('update', msg => {
-                console.log("update", msg);
-                let json = JSON.parse(msg['data']);
+    public subscribeStream(conn: Connection, api: API<Stream>): EventEmitter {
+        return this.mastodon(conn).stream(api.name, api.query);
+    }
 
-                let status = new Status(json);
-                ss.unshift(status);
-                console.log("Toot", status);
 
-                if (status.reblog) {
-                    console.log("reblogged", status.reblog);
-                }
-            });
-            s.on('delete', d => console.log("delete", d));
-            s.on('notification', d => console.log('notification', d))
             // s.on('message', (msg: { event: "update" | "delete" | "notification", data: string }) => {
             //     if (msg.event === "update") {
                 // let selecteds = (<string[]>[]).concat(source.filters);
@@ -193,6 +171,4 @@ export class App {
             //         console.log(msg.event, JSON.parse(msg.data));
             //     }
             // });
-        }
-    }
 }

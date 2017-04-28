@@ -4,6 +4,15 @@ import * as path from 'path';
 import * as sanitizeHtml from 'sanitize-html';
 
 
+export interface IdMap<V> {
+    [key: number]: V;
+}
+
+export interface UriMap<V> {
+    [key: string]: V;
+}
+
+
 @filled
 @assigned
 @sealed
@@ -43,6 +52,13 @@ export let isRESTAPI = function (api: API<REST | Stream>): api is API<REST> {
 
 export type Connection = { token: string, host: string }
 
+export type ColumnSettings = {
+    method: 'push' | 'unshift' | 'splice',
+    filter?: (s: Status) => boolean,
+    compare?: (s1: Status, s2: Status) => number
+};
+
+
 @filled
 @assigned
 @sealed
@@ -52,6 +68,7 @@ export class Source {
     filters: string[];
     api: API<REST | Stream>;
     constructor(obj: object) { }
+
 }
 
 @Asserted

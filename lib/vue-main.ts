@@ -1,9 +1,14 @@
 import Vue from 'vue';
-import { MastNotification, Delete, Status, Source, Stream, REST, API } from './defs';
+import {
+    MastNotification, Delete, Status,
+    Source, Stream, REST, API, isRESTAPI,
+    ColumnSettings
+} from './defs';
 import Column from './column';
 import { MastUtil } from './mastutil';
 import { App } from './app';
 import AppConfig from './config';
+import Worker from './worker'
 
 
 let statusApp = require('./templates/status');
@@ -76,7 +81,7 @@ let vm = new Vue({
         initilize: function () {
             window['debug'] = { streams: {} };
             let app = <App>this['app'];
-            
+
             app.config.accounts
                 .reduce((promise, acc) => {
                     return promise.then(() => app.fetchAccount(acc));
@@ -154,7 +159,26 @@ let vm = new Vue({
             let column = new Column(name);
             this['columns'].push(column);
             for (let source of sources) {
-                window['debug'].streams[source.name] = app.subscribe(source, column.statuses);
+                let columnSettings: ColumnSettings =
+                    isRESTAPI(source.api)
+                        ? {
+                            method: 'push',
+                            filter: (s: Status) => column.statuses.every(s1 => s1.id !== s.id),
+                            compare: (s1, s2) => s2.id - s1.id
+                        } : {
+                            method: 'unshift'
+                        };
+                let worker = new Worker(app)
+                worker.subscribe({
+                    api: source.api,
+                    conn: source.connection,
+                    handlers: {
+                        update: [
+                            Worker.columnHandler(column, columnSettings),
+                            Worker.consoleLogger()
+                        ]
+                    }
+                });
             }
         }
     },
