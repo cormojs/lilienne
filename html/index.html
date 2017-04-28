@@ -5,8 +5,7 @@
   <meta charset="UTF-8">
   <title>Lilienne</title>
   <link href="../build/main.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 
 <body>
@@ -17,7 +16,7 @@
     </form>
     <a v-if="authUrl" :href="authUrl">{{ authUrl }}</a>
     <form @submit.prevent="addAccount">
-      <input v-model.trim="authCode" placeholder="access token"></input>
+      <input v-model.trim="authCode" placeholder="input code"></input>
       <input type="submit" value="アカウント登録"></input>
     </form>
     <div>
@@ -27,28 +26,32 @@
       <form @submit.prevent="addSource(selectedConnection, selectedAPI, selectedFilters)" v-if="showAddColumn">
         <select id="accountSelector" v-model="selectedConnection">
           <option disabled value="">Select your account</option>
-          <option v-for="(pair, token, i) in getAccounts"
+          <option v-for="(pair, token, i) in app.fetchedAccounts"
             :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
         </select>
         <select v-model="selectedAPI">
           <option disabled value="">Select API</option>
           <option v-for="(api, name, i) in app.config.allApi" :key="i" :value="api">{{ name }}</option>
         </select>
-        <div>
-          <span v-for="(filter, name) in filters" :key="name">
-            <input type="checkbox" :id="name" :value="name" v-model="selectedFilters" />
-            <label :for="name">{{ filter.description }}</label>
-          </span>
-        </div>
         <input type="submit" value="ソースを追加" />
       </form>
     </div>
     <div id="column-add">
-      <form @submit.prevent="addColumn(columnNameInput, selectedSources)">
-        <div v-for="(source, i) in getSources" :key="i">
-          <input type="checkbox" :id="source" :value="source" v-model="selectedSources" />
-          <label :for="source.name">{{ source.name }}</label>
+      <form @submit.prevent="addColumn(columnNameInput, selectedSource, selectedFilter)">
+        <div>
+          <template v-for="(source, i) in app.config.sources">
+            <input type="radio" :id="i" :value="source" v-model="selectedSource">
+            <label :for="i">{{ source.name }}</label>
+          </template>
         </div>
+        <template v-for="(filter, name) in app.config.filters">
+          <input type="radio" :id="name" :value="filter" v-model="selectedFilter">
+          <label :for="name">{{ name }}</label>
+        </template>
+        <div>
+
+        </div>
+        <input v-model="columnNameInput" placeholder="column title" />
         <input type="submit" value="カラムを追加" />
       </form>
     </div>
