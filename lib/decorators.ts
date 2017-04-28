@@ -52,6 +52,24 @@ export function Asserted(ctor: Newable<object>) {
                     console.assert(fn(this[key]));
                 }
             }
+            console.log("Asserted", this);
+        }
+    }
+}
+
+const constructionKey = Symbol('construction');
+
+export function Constructed(ctor: Newable<object>) {
+    return <any>class ConstRuctedClass extends ctor {
+        constructor(obj: object) {
+            super(obj);
+            for (let key in this) {
+                let con = Reflect.getMetadata(constructionKey, this, key);
+                if (con) {
+                    this[key] = new con(this[key]);
+                    console.log("Constructed for", key);
+                }
+            }
         }
     }
 }
@@ -59,6 +77,16 @@ export function Asserted(ctor: Newable<object>) {
 export function NotNull(target: any, key: string | symbol): void {
     Reflect.defineMetadata(assertionKey, (v): boolean => v, target, key);
     Object.defineProperty(target, key, {
+        enumerable: true,
+        writable: true
+    });
+}
+
+export function Constructive(target: any, key: string | symbol): void {
+    let ctor = Reflect.getMetadata("design:type", target, key);
+    console.log("Constructive Type", ctor);
+    Reflect.defineMetadata(constructionKey, ctor, target, key);
+    Reflect.defineProperty(target, key, {
         enumerable: true,
         writable: true
     });
