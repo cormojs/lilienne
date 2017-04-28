@@ -21,18 +21,6 @@ import * as path from 'path'
 
 export class App {
     public static timeout_ms = 60 * 1000;
-    public static filters = {
-        lolie: {
-            fn: (s: Status) => s.tags && s.tags.some((tag) => tag.name === "lolie"),
-            description: "Select #lolie"
-        },
-        sensitive: {
-            fn: (s: Status) => s.sensitive === true,
-            description: "Select sensitvie tweets"
-        }
-    }
-
-    
 
     public config: AppConfig;
     public fetchedAccounts: { token?: { account: Account, host: string } } = {};
