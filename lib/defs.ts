@@ -1,16 +1,11 @@
-import { assigned, sealed, filled, Asserted, NotNull } from './decorators'
+import {
+    assigned, sealed, filled,
+    Asserted, NotNull,
+    Constructed, Constructive
+} from './decorators'
 import * as fs from 'fs';
 import * as path from 'path';
 import * as sanitizeHtml from 'sanitize-html';
-
-
-export interface IdMap<V> {
-    [key: number]: V;
-}
-
-export interface UriMap<V> {
-    [key: string]: V;
-}
 
 
 @filled
@@ -88,7 +83,9 @@ export class Account {
     statuses_count: number;
     note: string;
     url: string;
+    @NotNull
     avatar: string;
+    @NotNull
     avatar_static: string;
     header: string;
     header_static: string;
@@ -115,15 +112,17 @@ export type Tag = {
 };
 
 
+@Constructed
 @Asserted
 // @filled
 @assigned
 export class Status {
     @NotNull
+    @Constructive
     account: Account;
     @NotNull
     id: number;
-    sensitive: boolean;
+    sensitive?: boolean;
     media_attachments: Attachment[];
     reblog?: Status;
     @NotNull
@@ -134,7 +133,7 @@ export class Status {
     constructor(obj: object) {
     }
     get contentSanitized(): string {
-         return sanitizeHtml(this.ownStatus.content, {
+         return sanitizeHtml(this.content, {
              allowedTags: ['a'],
              allowedAttributes: {
                  'a': [ 'href' ]
@@ -142,7 +141,7 @@ export class Status {
          });
      }
 
-     get ownStatus(): Status {
+     get actual(): Status {
          return this.reblog ? new Status(this.reblog) : this;
      }
 };
