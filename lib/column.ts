@@ -1,4 +1,4 @@
-import { Status } from './defs';
+import { Status, Source } from './defs';
 import AppConfig from './config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -6,10 +6,12 @@ import * as path from 'path';
 export default class Column {
     title: string;
     id: number;
+    source: Source;
     private _statuses: Status[] = [];
 
-    constructor(title: string) {
+    constructor(title: string, source: Source) {
         this.title = title;
+        this.source = source;
     }
 
     get statuses(): Status[] {
