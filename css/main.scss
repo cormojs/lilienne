@@ -1,2 +1,11 @@
 @import './status.scss';
-@import './columns.scss';
+
+#lilienne {
+    .initial-settings {
+        display: flex;
+        > * {
+            margin-left: 5px;
+        }
+    }
+    @import './columns.scss';
+}
