@@ -14,7 +14,7 @@
     <div v-if="actual.media_attachments.length !== 0" class="media">
       <template v-for="(media, i) in actual.media_attachments">
         <div class="thumbnail-container">
-          <div class="thumbnail" :style="thumbnailStyle(media)"></div>
+          <a href="#" @click="openMedia(media)" class="thumbnail" :style="thumbnailStyle(media)"></a>
         </div>
       </template>
     </div>
@@ -22,7 +22,7 @@
       <span class="actions">
                 <i class="action material-icons">chat_bubble_outline</i>
                 <i class="action material-icons">cached</i>
-                <i class="action material-icons" @click="fav(actual)">favorite_border</i>
+                <i class="action material-icons" :class="fire()" @click="fav(actual)">{{ faved ? 'favorite' : 'favorite_border' }}</i>
                 <i class="action material-icons" @click="copy(status)">content_copy</i>
               </span>
       <span class="created_at">{{ new Date(actual.created_at).toLocaleString() }}</span>
@@ -31,12 +31,13 @@
 </template>
 
 <script>
-import { clipboard } from 'electron';
+import { clipboard, shell } from 'electron';
 export default {
   props: ["status", "index", 'columnSize'],
   data: function () {
     return {
-      bigMediaMode: true
+      bigMediaMode: true,
+      faved: undefined,
     };
   },
   computed: {
@@ -56,18 +57,35 @@ export default {
     }
   },
   methods: {
-    avatarStyle: function (s) {
-      console.log("avator", s);
+    fire() {
+      if (this.faved === undefined) {
+        this.faved = this.status.actual.favourited;
+      }
+
+      return {
+        'fired' : this.faved
+      };
+    },
+    avatarStyle(s) {
+      if (!s.account) {
+        console.error("account not found", this['status']);
+        return {};
+      }
       return {
         'background-image': `url(${s.account.avatar_static})`,
         'background-repeat': 'no-repeat',
         'background-size': 'cover'
       };
     },
+    openMedia(media) {
+      let url = media.remote_url || media.url;
+      shell.openExternal(url);
+    },
     log() {
       console.log(this.status);
     },
     copy(s) {
+      console.log(s);
       clipboard.writeText(JSON.stringify(s));
     },
     thumbnailStyle: function (media) {
@@ -82,12 +100,15 @@ export default {
       };
     },
     fav(s) {
-      let m = this.$parent.$parent.app.mastodon(this.$parent.column.source.connection);
-      console.log("fav'ing", m);
+      let c = this.$parent.column;
+      let m = this.$parent.$parent.app.mastodon(c.connection);
       m
         .post("statuses/:id/favourite", { id: s.id })
         .catch(err => console.error(err))
-        .then(data => console.log("faved"));
+        .then(data => {
+          this.faved = true;
+          console.log("faved", data);
+        });
     }
   }
 };
