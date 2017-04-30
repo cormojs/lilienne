@@ -14,12 +14,14 @@ export class Column {
     title: string;
     id: number;
     connection: Connection;
+    filterName: string;
     private _statuses: Status[];
 
-    constructor(title: string, conn: Connection) {
+    constructor(title: string, conn: Connection, filterName: string) {
         this.title = title;
         this.connection = conn;
         this._statuses = [];
+        this.filterName = filterName;
     }
 
     get statuses(): Status[] {
