@@ -2,40 +2,56 @@ import { EventEmitter } from 'events';
 
 import { App } from './app';
 import {
-    Connection, REST,
+    Connection, REST, Source,
     Stream, API, Status, MastNotification, Delete, isRESTAPI
 } from './defs';
 
+export type Handlers = {
+    update?: [(...ss: Status[]) => void],
+    errror?: [(e: any) => void],
+    notification?: [(n: MastNotification) => void],
+    delete?: [(d: Delete) => void]
+}
+
 export type Subscribe = {
-    api: API<REST | Stream>,
-    conn: Connection
-    handlers: {
-        update?: [(...ss: Status[]) => void],
-        errror?: [(e: any) => void],
-        notification?: [(n: MastNotification) => void],
-        delete?: [(d: Delete) => void]
+    source: Source,
+    handlers: Handlers
+}
+
+class Subscriber extends EventEmitter {
+    constructor() {
+        super();
+    }
+    listen(handlers: Handlers, once: boolean = false) {
+        for (let name in handlers) {
+            for (let fn of handlers[name]) {
+                if (once) {
+                    this.once(name, fn);
+                } else {
+                    this.on(name, fn);
+                }
+            }
+        }
     }
 }
 
 export default class Worker {
     _app: App;
-    _events: EventEmitter[] = [];
+    _events: Subscriber[] = [];
 
     constructor(app: App = new App()) {
         this._app = app;
     }
 
-    subscribe({ api, handlers, conn }: Subscribe): EventEmitter {
-        let event = new EventEmitter();
+    subscribe(source: Source): Subscriber {
+        let api = source.api;
+        let conn = source.connection;
+        let event = new Subscriber();
 
-        for (let name in handlers) {
-            for (let fn of handlers[name]) {
-                event.on(name, fn);
-            }
-        }
+
 
         if (isRESTAPI(api)) {
-            this._app.subscribeREST(conn, api, function(err: any, ...ss: Status[]) {
+            this._app.subscribeREST(conn, api, function (err: any, ...ss: Status[]) {
                 if (err) {
                     event.emit('error', err);
                 } else {
@@ -48,7 +64,6 @@ export default class Worker {
                 .stream(api.name, api.query);
             stream.on('error', e => event.emit('error', e));
             stream.on('update', (msg: { data: string }) => {
-                console.debug("update", msg);
                 let json = JSON.parse(msg.data);
                 event.emit('update', new Status(json))
             });
@@ -66,7 +81,7 @@ export default class Worker {
         let statuses: { [k: string]: Status } = {};
         let buffer: { [k: string]: Status } = {};
 
-        return function(...newlyArrived: Status[]) {
+        return function (...newlyArrived: Status[]) {
             for (let status of newlyArrived) {
                 buffer[status.id] = status;
             }
