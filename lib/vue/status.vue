@@ -7,7 +7,7 @@
       <span class="account-display_name">{{ actual.account.display_name }}</span>
       </span>
       <span class="right">
-                <span class="account-host">{{ actual.account.host }}</span>
+          <span class="account-host">{{ actual.account.host }}</span>
       </span>
     </div>
     <div class="content" v-html="actual.contentSanitized"></div>
@@ -22,7 +22,7 @@
       <span class="actions">
                 <i class="action material-icons">chat_bubble_outline</i>
                 <i class="action material-icons">cached</i>
-                <i class="action material-icons" :class="fire()" @click="fav(actual)">{{ faved ? 'favorite' : 'favorite_border' }}</i>
+                <i class="action material-icons" :class="fire(actual)" @click="fav(actual)">{{ faved === true ? 'favorite' : 'favorite_border' }}</i>
                 <i class="action material-icons" @click="copy(status)">content_copy</i>
               </span>
       <span class="created_at">{{ new Date(actual.created_at).toLocaleString() }}</span>
@@ -38,7 +38,7 @@ export default {
   data: function () {
     return {
       bigMediaMode: true,
-      faved: undefined,
+      faved: null,
     };
   },
   computed: {
@@ -58,9 +58,9 @@ export default {
     }
   },
   methods: {
-    fire() {
-      if (this.faved === undefined) {
-        this.faved = this.status.actual.favourited;
+    fire(s) {
+      if (this.faved === null) {
+        this.faved = s.favourited === true ? true : false;
       }
 
       return {
