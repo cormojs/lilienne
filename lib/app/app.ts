@@ -83,17 +83,10 @@ export class App {
         }
     }
 
-    public mastodon(conn: Connection, timeout_ms?: number): Mast {
-        return new Mast({
-            access_token: conn.token,
-            timeout_ms: timeout_ms,
-            api_url: 'https://' + conn.host + '/api/v1/'
-        });
-    }
-
-    public subscribeREST(conn: Connection, api: API<REST>, callback: (err: any, ...ss: Status[]) => void) {
+    public subscribeREST(conn: Connection, api: API<REST>,
+        callback: (err: any, ...ss: Status[]) => void): Promise<void> {
         let push = (query: Query): Promise<Query> => {
-            return this
+            return MastUtil
                 .mastodon(conn, App.timeout_ms)
                 .get(api.name, query)
                 .catch(e => callback(e))
@@ -131,10 +124,10 @@ export class App {
                 });
             }
         };
-        rec(api.query !== undefined ? api.query : {}, api.form.auto_page);
+        return rec(api.query !== undefined ? api.query : {}, api.form.auto_page);
     }
 
     public subscribeStream(conn: Connection, api: API<Stream>): EventEmitter {
-        return this.mastodon(conn).stream(api.name, api.query);
+        return MastUtil.mastodon(conn).stream(api.name, api.query);
     }
 }
