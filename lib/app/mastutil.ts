@@ -7,16 +7,6 @@ import { Registration, Connection } from './defs';
 export namespace MastUtil {
     export const defaultRedirect = "urn:ietf:wg:oauth:2.0:oob";
     export const apiBase = '/api/v1/';
-    export function publicTimeline(obj): Promise<Object> {
-        let token = fs.readFileSync('./token.dat', 'utf8').replace(/\n/, "");
-        let Mas = function (config: object) { };
-        let m = new Mast({
-            access_token: token,
-            timeout_ms: 60 * 1000,
-            api_url: 'https://' + obj.host + '/api/v1/'
-        });
-        return m.get('timelines/public', obj.query);
-    }
 
     export function createApp(host: string, name: string, scopes = "read write follow", redirectUri = defaultRedirect)
         : Promise<Registration> {
