@@ -117,7 +117,7 @@ export class Status {
     tags: Tag[];
     @NotNull
     content: string;
-    favourited: true;
+    favourited: boolean;
 
     constructor(obj: object) {}
     get contentSanitized(): string {
