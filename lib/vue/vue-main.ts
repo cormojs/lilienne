@@ -13,6 +13,39 @@ import Worker from '../app/worker';
 import filters from '../app/filters';
 
 let statusApp = require('./status');
+let tootApp = {
+    template: `
+      <div class="toot">
+        <select class="toot-account" v-model="connection">
+            <option disabled value="">Select your account</option>
+            <option v-for="(pair, token, i) in $parent.app.fetchedAccounts"
+              :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
+        </select>
+        <textarea class="content" v-model="content" placeholder="What's happening now?" />
+        <button class="post" @click="toot(connection, content)">トゥート!</button>
+      </div>`,
+    props: [],
+    data: function () {
+        return {
+            connection: null,
+            content: null
+        };
+    },
+    methods: {
+        toot(conn: Connection, content: string) {
+            if (conn && content) {
+                MastUtil
+                    .mastodon(conn)
+                    .post('statuses', { status: content })
+                    .catch(e => console.error(e))
+                    .then(result => {
+                        console.log("tooted:", result);
+                        this.content = null;
+                    });
+            }
+        }
+    }
+};
 let columnApp = {
     components: {
         status: statusApp,
@@ -110,7 +143,8 @@ let vm = new Vue({
         vueConfig: null
     },
     components: {
-        column: columnApp
+        column: columnApp,
+        toot: tootApp
     },
     methods: {
         initilize: function () {
@@ -185,7 +219,7 @@ let vm = new Vue({
                 console.error('No authorization code input.')
             }
         },
-        addColumn: function(connection: Connection, filterName: string) {
+        addColumn: function (connection: Connection, filterName: string) {
             let app = <App>this['app'];
             let column = new Column({
                 title: connection.host,
