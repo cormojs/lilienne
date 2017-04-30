@@ -26,7 +26,7 @@ export function Filled(ctor: Newable<object>) {
             for (let key in this) {
                 let val = this[key];
                 console.assert(typeof val !== 'undefined' && val !== null,
-                               `${key} is not filled`, this);
+                    `${key} is not filled`, this);
             }
         }
     };
@@ -58,6 +58,7 @@ export function Asserted(ctor: Newable<object>) {
 }
 
 const constructionKey = Symbol('construction');
+const recursiveKey = Symbol('recursion');
 
 export function Constructed(ctor: Newable<object>) {
     return <any>class ConstructedClass extends ctor {
@@ -66,8 +67,13 @@ export function Constructed(ctor: Newable<object>) {
             for (let key in this) {
                 let con = Reflect.getMetadata(constructionKey, this, key);
                 let val = this[key];
-                if (con && val && !(val instanceof con)) {
-                    this[key] = new con(val);
+                if (con && val && val !== null) {
+                    if (con === recursiveKey) {
+                        console.log(`${key} recusively constructed:`, con, val);
+                        this[key] = <any>new ConstructedClass(<any>val);
+                    } else if (!(val instanceof con)) {
+                        this[key] = new con(val);
+                    }
                 }
             }
         }
@@ -81,6 +87,11 @@ export function NotNull(target: any, key: string | symbol): void {
 export function Constructive(target: any, key: string | symbol): void {
     let ctor = Reflect.getMetadata("design:type", target, key);
     Reflect.defineMetadata(constructionKey, ctor, target, key);
+}
+
+export function Recursive(target: any, key: string | symbol): void {
+    Reflect.defineMetadata(constructionKey, recursiveKey, target, key);
+    console.log(`Recursive ${key}`, target);
 }
 
 export function CheckType(target: any, key: string | symbol) {
