@@ -10,20 +10,22 @@
 
 <body>
   <div id="lilienne">
-    <form @submit.prevent="register">
-      <input v-model.trim="hostInput" placeholder="example.com"></input>
-      <input type="submit" value="App登録"></input>
-    </form>
-    <a v-if="authUrl" :href="authUrl">{{ authUrl }}</a>
-    <form @submit.prevent="addAccount">
-      <input v-model.trim="authCode" placeholder="input code"></input>
-      <input type="submit" value="アカウント登録"></input>
-    </form>
-    <div>
-      <button @click="saveConfig">Save Config</button>
+    <div class="initial-settings">
+      <div>
+        <button @click="saveConfig">Save Config</button>
+      </div>
+      <form @submit.prevent="register">
+        <input v-model.trim="hostInput" placeholder="example.com"></input>
+        <input type="submit" value="App登録"></input>
+      </form>
+      <a v-if="authUrl" href="#" @click="openAuth()">認証ページを開く</a>
+      <form @submit.prevent="addAccount">
+        <input v-model.trim="authCode" placeholder="input code"></input>
+        <input type="submit" value="アカウント登録"></input>
+      </form>
     </div>
-    <div id="source-add">
-      <form @submit.prevent="addSource(selectedConnection, selectedAPI, selectedFilters)" v-if="showAddColumn">
+    <!--<div class="source-add">
+      <form @submit.prevent="addSource(selectedConnection, selectedAPI)" v-if="showAddColumn">
         <select id="accountSelector" v-model="selectedConnection">
           <option disabled value="">Select your account</option>
           <option v-for="(pair, token, i) in app.fetchedAccounts"
@@ -35,28 +37,27 @@
         </select>
         <input type="submit" value="ソースを追加" />
       </form>
-    </div>
-    <div id="column-add">
-      <form @submit.prevent="addColumn(columnNameInput, selectedSource, selectedFilter)">
+    </div>-->
+    <div class="column-add" v-if="showAddColumn">
+      <form @submit.prevent="addColumn(selectedConnection, selectedFilter)">
         <div>
-          <template v-for="(source, i) in app.config.sources">
-            <input type="radio" :id="i" :value="source" v-model="selectedSource">
-            <label :for="i">{{ source.name }}</label>
+          <select id="accountSelector" v-model="selectedConnection">
+            <option disabled value="">Select your account</option>
+            <option v-for="(pair, token, i) in app.fetchedAccounts"
+              :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
+          </select>
+        </div>
+        <div>
+          <template v-for="(filter, name) in app.config.filters">
+            <input type="radio" :id="name" :value="name" v-model="selectedFilter">
+            <label :for="name">{{ name }}</label>
           </template>
         </div>
-        <template v-for="(filter, name) in app.config.filters">
-          <input type="radio" :id="name" :value="filter" v-model="selectedFilter">
-          <label :for="name">{{ name }}</label>
-        </template>
-        <div>
-
-        </div>
-        <input v-model="columnNameInput" placeholder="column title" />
         <input type="submit" value="カラムを追加" />
       </form>
     </div>
-    <div id="columns">
-      <column v-for="(column, i) in columns" :key="i" :column="column">
+    <div class="columns">
+      <column v-for="(column, i) in columns" :key="i" :index="i" :column="column">
       </column>
     </div>
   </div>

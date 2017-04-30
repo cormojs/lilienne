@@ -1,7 +1,8 @@
 import Vue from 'vue';
+import { shell } from 'electron';
 import {
     MastNotification, Delete, Status,
-    Source, Stream, REST, API, isRESTAPI
+    Source, Stream, REST, API, isRESTAPI, Connection
 } from '../app/defs';
 import { Column, ColumnSettings } from './column';
 import { MastUtil } from '../app/mastutil';
@@ -18,12 +19,19 @@ let columnApp = {
     },
     template: `
       <div class="column" :value="columnSize" @resize="() => { columnSize = getSize() }" >
-        <button @click="saveToots()">Save toots</button>
-        <button @click="deleteColumn(index)">Delete column</button>
+        <button @click="saveToots()">Save</button>
+        <button @click="deleteColumn(parseInt(index))">X</button>
+        <form @submit.prevent="addSource(selectedAPI)">
+          <select id="sourceSelector" v-model="selectedAPI">
+            <option disabled value="">Select</option>
+            <option v-for="(api, name, i) in $parent.app.config.allApi" :key="i" :value="api">{{ name }}</option>
+          </select>
+          <input type="submit" value="read" />          
+        </form>
         <div class="header">{{ column.title }}</div>
         <div class="scrollable">
           <status v-for="(status, index) in column.statuses" :key="index"
-                  :index="index" :status="status" :column-size="columnSize"></status>
+                  :index="column.statuses.length - index" :status="status" :column-size="columnSize"></status>
         </div>
       </div>
     `,
@@ -33,7 +41,8 @@ let columnApp = {
             columnSize: {
                 width: 300,
                 height: 300
-            }
+            },
+            selectedAPI: null,
         };
     },
     methods: {
@@ -49,7 +58,39 @@ let columnApp = {
             (<Column>this['column']).save();
         },
         deleteColumn(index: number) {
-            (<Column[]>this.$parent['column']).splice(index, 0);
+            let [c] = (<Column[]>this.$parent.columns).splice(index, 1);
+            c.close();
+        },
+        addSource(api: API<REST | Stream>) {
+            let column: Column = <Column>this['column'];
+            let source: Source = new Source({
+                name: "dummy",
+                connection: column.connection,
+                api: api
+            });
+            let event = new Worker(this.$parent.app).subscribe(source);
+            if (isRESTAPI(api)) {
+                event.listen({
+                    update: [
+                        column.statusHandler({
+                            method: 'push',
+                            filter: _ => true,
+                            compare: (s1, s2) => s2.id - s1.id
+                        }),
+                        (..._: Status[]) => event.removeAllListeners()
+                    ]
+                }, true);
+            } else {
+                event.listen({
+                    update: [
+                        column.statusHandler({
+                            method: 'unshift',
+                            filter: _ => true,
+                            keep: 1000
+                        })
+                    ]
+                }, true);
+            }
         }
     }
 };
@@ -66,8 +107,7 @@ let vm = new Vue({
         selectedConnection: null,
         selectedAPI: null,
         selectedFilter: _ => true,
-        columnNameInput: '',
-        selectedSource: null
+        columnNameInput: ''
     },
     components: {
         column: columnApp
@@ -84,6 +124,10 @@ let vm = new Vue({
                 .then(() => {
                     this['showAddColumn'] = true;
                 });
+        },
+        openAuth: function () {
+            shell.openExternal(this['authUrl']);
+            this['authUrl'] = null;
         },
         saveConfig: function () {
             (<App>this['app']).config.save();
@@ -135,49 +179,26 @@ let vm = new Vue({
                             console.error(`Couldn't get access token.`);
                         }
                     }).then(_ => {
+                        process.nextTick(() => (<App>this['app']).config.save())
                         this.$forceUpdate();
                     });
             } else {
                 console.error('No authorization code input.')
             }
         },
-        addSource: function (conn: { token: string, host: string }, api: API<REST | Stream>, filters: string[]) {
+        addSource: function (conn: { token: string, host: string }, api: API<REST | Stream>) {
+            console.log(api);
             let source = {
                 name: `${api.name} in ${conn.host}`,
                 connection: conn,
-                api: api,
-                filters: filters
+                api: api
             };
             (<App>this['app']).config.sources.push(source);
         },
-        addColumn: function (name: string, source: Source, selectedFilter: Function) {
+        addColumn: function(connection: Connection, filterName: string) {
             let app = <App>this['app'];
-            let column = new Column(name, source);
+            let column = new Column(connection.host, connection, filterName);
             this['columns'].push(column);
-            let unique = (s: Status) => column.statuses.every(s1 => s1.id !== s.id);
-            let [{ }, hasMedia] = filters.hasMedia;
-            let filter = (s: Status) => [selectedFilter].every(f => f(s.actual))
-            let columnSettings: ColumnSettings =
-                isRESTAPI(source.api)
-                    ? {
-                        method: 'push',
-                        filter: filter,
-                        compare: (s1, s2) => s2.id - s1.id
-                    } : {
-                        method: 'unshift',
-                        filter: filter
-                    };
-            let worker = new Worker(app)
-            worker.subscribe({
-                api: source.api,
-                conn: source.connection,
-                handlers: {
-                    update: [
-                        column.statusHandler(columnSettings),
-                        Worker.consoleLogger()
-                    ]
-                }
-            });
         }
     },
     mounted: function () {
