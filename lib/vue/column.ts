@@ -1,4 +1,4 @@
-import { Status, Source } from '../app/defs';
+import { Status, Connection } from '../app/defs';
 import AppConfig from '../app/config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -6,26 +6,24 @@ import * as path from 'path';
 export type ColumnSettings = {
     method: 'push' | 'unshift' | 'splice',
     filter?: (s: Status) => boolean,
-    compare?: (s1: Status, s2: Status) => number
+    compare?: (s1: Status, s2: Status) => number,
+    keep?: number
 };
 
 export class Column {
     title: string;
     id: number;
-    source: Source;
-    private _statuses: Status[] = [];
+    connection: Connection;
+    private _statuses: Status[];
 
-    constructor(title: string, source: Source) {
+    constructor(title: string, conn: Connection) {
         this.title = title;
-        this.source = source;
+        this.connection = conn;
+        this._statuses = [];
     }
 
     get statuses(): Status[] {
         return this._statuses;
-    }
-
-    set statuses(s: Status[]) {
-        this._statuses = s;
     }
 
     save(dir: string = AppConfig.saveDir) {
@@ -36,6 +34,10 @@ export class Column {
         let filename = path.join(process.cwd(), dir, `${datetime}.json`);
         fs.writeFileSync(filename, JSON.stringify(this.statuses));
         console.log(`Toots saved to ${filename}`);
+    }
+
+    close() {
+        delete this._statuses;
     }
 
     statusHandler(option: ColumnSettings): (...ss: Status[]) => void {
@@ -54,6 +56,12 @@ export class Column {
                     this.statuses.unshift(status);
                 } else if (option.method === 'splice') {
                     this.statuses.splice(status.id, 0, status);
+                }
+            }
+            if (option.keep) {
+                let len = this.statuses.length;
+                if (len > option.keep) {
+                    this.statuses.splice(option.keep - 1, len - option.keep);
                 }
             }
         };
