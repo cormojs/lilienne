@@ -2,6 +2,7 @@
 node_modules/
 main.js
 lilienne.json
+view.json
 saved/*json
 build/
 build/*
