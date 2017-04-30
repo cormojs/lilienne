@@ -1,4 +1,4 @@
-import { Registration, Source, API, REST, Stream, Status } from './defs';
+import { Registration, Source, API, REST, Stream, Status, Connection } from './defs';
 import { Monitored } from '../decorators';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -12,7 +12,7 @@ export default class AppConfig {
     public static apiJson: string = "api.json";
 
     public registrations: { host?: Registration } = {};
-    public accounts: { token: string, host: string }[] = [];
+    public accounts: Connection[] = [];
     public sources: Source[] = [];
     public configFile: string;
     public allApi: { name?: API<REST | Stream> } = (() => {

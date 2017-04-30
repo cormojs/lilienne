@@ -1,7 +1,8 @@
 import {
     Assigned, Sealed, Filled,
     Asserted, NotNull,
-    Constructed, Constructive, CheckType, Debug
+    Constructed, Constructive, CheckType, Debug,
+    Monitored, Recursive
 } from '../decorators'
 import * as fs from 'fs';
 import * as path from 'path';
@@ -53,17 +54,17 @@ export type Connection = { token: string, host: string }
 export class Source {
     name: string;
     connection: Connection;
-    filters: string[];
     api: API<REST | Stream>;
     constructor(obj: object) { }
 
 }
 
+@Asserted
 @Filled
 @Assigned
 export class Account {
-    id: number;
-    username: string;
+    @NotNull id: number;
+    @NotNull username: string;
     acct: string;
     display_name: string;
     locked: boolean;
@@ -73,8 +74,8 @@ export class Account {
     statuses_count: number;
     note: string;
     url: string;
-    avatar: string;
-    avatar_static: string;
+    @NotNull avatar: string;
+    @NotNull avatar_static: string;
     header: string;
     header_static: string;
     get host(): string {
@@ -90,7 +91,7 @@ export type Attachment = {
     id: number,
     type: 'image' | 'video' | 'gifv',
     url: string,
-    remote_url: string,
+    remote_url?: string,
     preview_url: string,
     text_url: string
 };
@@ -98,7 +99,6 @@ export type Tag = {
     name: string,
     url: string
 };
-
 
 @Constructed
 @Asserted
@@ -111,13 +111,14 @@ export class Status {
     id: number;
     sensitive?: boolean;
     media_attachments: Attachment[];
-    @Constructive
-    reblog?: Status;
+    @Recursive
+    reblog?: this;
     @NotNull
     url: string;
     tags: Tag[];
     @NotNull
     content: string;
+    favourited: true;
 
     constructor(obj: object) {}
     get contentSanitized(): string {
@@ -129,7 +130,11 @@ export class Status {
          });
      }
 
-     get actual(): Status {
+     get actual(): this {
+         if (this.reblog) {
+             console.log("reblog:", this.reblog);
+             console.log("content:", this.reblog.contentSanitized);
+         }
          return this.reblog || this;
      }
 };
