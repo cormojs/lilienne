@@ -12,7 +12,11 @@
     </div>
     <div class="content" v-html="actual.contentSanitized"></div>
     <div v-if="actual.media_attachments.length !== 0" class="media">
-      <div v-for="(media, i) in actual.media_attachments" :key="i" class="thumbnail" :style="thumbnailStyle(media)"></div>
+      <template v-for="(media, i) in actual.media_attachments">
+        <div class="thumbnail-container">
+          <div class="thumbnail" :style="thumbnailStyle(media)"></div>
+        </div>
+      </template>
     </div>
     <div class="footer">
       <span class="actions">
@@ -80,10 +84,10 @@ export default {
         //          'width': (width * 0.9).toString() + '%',
         'background-image': `url(${media.preview_url})`,
         'background-repeat': 'no-repeat',
-        'background-size': 'cover',
-        'background-position': 'center middle',
-        'width': this.mediaSize + 'px',
-        'height': this.mediaSize + 'px',
+        'background-size': 'contain',
+        'background-position': 'center center',
+        // 'width': this.mediaSize + 'px',
+        // 'height': this.mediaSize + 'px',
       };
     },
     fav(s) {

@@ -3,10 +3,8 @@ import { EventEmitter } from 'events';
 import { App } from './app';
 import {
     Connection, REST,
-    Stream, API, Status, MastNotification, Delete, isRESTAPI,
-    IdMap, UriMap, ColumnSettings
+    Stream, API, Status, MastNotification, Delete, isRESTAPI
 } from './defs';
-import Column from './column';
 
 export type Subscribe = {
     api: API<REST | Stream>,
@@ -65,8 +63,8 @@ export default class Worker {
     // still unimplemented
     static fileLogger(o: { keep: number, rotate: number, dir: string })
         : (...ss: Status[]) => void {
-        let statuses: IdMap<Status> = {};
-        let buffer: IdMap<Status> = {};
+        let statuses: { [k: string]: Status } = {};
+        let buffer: { [k: string]: Status } = {};
 
         return function(...newlyArrived: Status[]) {
             for (let status of newlyArrived) {
@@ -85,28 +83,6 @@ export default class Worker {
         return function(...args: T[]) {
             console.log(`${args.length} messages received`);
         }
-    }
-
-    static columnHandler(column: Column, option: ColumnSettings)
-        : (...ss: Status[]) => void {
-        return function(...ss: Status[]) {
-            let statuses = ss;
-            if (option.filter) {
-                statuses = statuses.filter(option.filter);
-            }
-            if (option.compare) {
-                statuses = statuses.sort(option.compare);
-            }
-            for (let status of statuses) {
-                if (option.method === 'push') {
-                    column.statuses.push(status);
-                } else if (option.method === 'unshift') {
-                    column.statuses.unshift(status);
-                } else if (option.method === 'splice') {
-                    column.statuses.splice(status.id, 0, status);
-                }
-            }
-        };
     }
 }
 

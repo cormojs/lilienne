@@ -1,16 +1,16 @@
 import {
-    assigned, sealed, filled,
+    Assigned, Sealed, Filled,
     Asserted, NotNull,
-    Constructed, Constructive
-} from './decorators'
+    Constructed, Constructive, CheckType, Debug
+} from '../decorators'
 import * as fs from 'fs';
 import * as path from 'path';
 import * as sanitizeHtml from 'sanitize-html';
 
 
-@filled
-@assigned
-@sealed
+@Filled
+@Assigned
+@Sealed
 export class Registration {
     id: number;
     client_id: string;
@@ -21,8 +21,8 @@ export class Registration {
 export type Stream = any;
 export let Stream: Stream = null;
 
-@assigned
-@sealed
+@Assigned
+@Sealed
 export class REST {
     update_min: number | null;
     auto_page: number;
@@ -47,16 +47,9 @@ export let isRESTAPI = function (api: API<REST | Stream>): api is API<REST> {
 
 export type Connection = { token: string, host: string }
 
-export type ColumnSettings = {
-    method: 'push' | 'unshift' | 'splice',
-    filter?: (s: Status) => boolean,
-    compare?: (s1: Status, s2: Status) => number
-};
-
-
-@filled
-@assigned
-@sealed
+@Filled
+@Assigned
+@Sealed
 export class Source {
     name: string;
     connection: Connection;
@@ -66,13 +59,10 @@ export class Source {
 
 }
 
-@Asserted
-// @filled
-@assigned
+@Filled
+@Assigned
 export class Account {
-    @NotNull
     id: number;
-    @NotNull
     username: string;
     acct: string;
     display_name: string;
@@ -83,9 +73,7 @@ export class Account {
     statuses_count: number;
     note: string;
     url: string;
-    @NotNull
     avatar: string;
-    @NotNull
     avatar_static: string;
     header: string;
     header_static: string;
@@ -114,8 +102,7 @@ export type Tag = {
 
 @Constructed
 @Asserted
-// @filled
-@assigned
+@Assigned
 export class Status {
     @NotNull
     @Constructive
@@ -124,14 +111,15 @@ export class Status {
     id: number;
     sensitive?: boolean;
     media_attachments: Attachment[];
+    @Constructive
     reblog?: Status;
     @NotNull
     url: string;
     tags: Tag[];
+    @NotNull
     content: string;
 
-    constructor(obj: object) {
-    }
+    constructor(obj: object) {}
     get contentSanitized(): string {
          return sanitizeHtml(this.content, {
              allowedTags: ['a'],
@@ -142,6 +130,6 @@ export class Status {
      }
 
      get actual(): Status {
-         return this.reblog ? new Status(this.reblog) : this;
+         return this.reblog || this;
      }
 };

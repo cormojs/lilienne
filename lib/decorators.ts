@@ -4,41 +4,42 @@ interface Newable<T> {
     new (...args: any[]): T
 };
 
-export function monitored(ctor: Newable<object>) {
-    class newClass extends ctor {
+export function Monitored(ctor: Newable<object>) {
+    return <any>class newClass extends ctor {
         constructor(obj: any) {
-            console.log("from: ", obj);
+            console.log(`Creating ${ctor.name} from:`, obj);
             super(obj);
-            console.log("created: ", JSON.stringify(this));
+            console.log(`${ctor.name} was created:`, this);
         }
-    }
-    return (<any>newClass);
+    };
 };
 
-export function sealed(ctor: Function) {
+export function Sealed(ctor: Function) {
     Object.seal(ctor);
     Object.seal(ctor.prototype);
 };
 
-export function filled(ctor: Newable<object>) {
-    return <any>class filledClass extends ctor {
+export function Filled(ctor: Newable<object>) {
+    return <any>class FilledClass extends ctor {
         constructor(...args: any[]) {
             super(...args);
             for (let key in this) {
-                console.assert(this[key], key);
+                let val = this[key];
+                console.assert(typeof val !== 'undefined' && val !== null,
+                               `${key} is not filled`, this);
             }
         }
-    }
+    };
 }
 
-export function assigned(ctor: Newable<object>) {
-    class assignedClass extends ctor {
+export function Assigned(ctor: Newable<object>) {
+    class AssignedClass extends ctor {
         constructor(obj: object) {
             super(obj);
             Object.assign(this, obj);
         }
     }
-    return (<any>assignedClass);
+    return (<any>AssignedClass);
 }
 const assertionKey = Symbol('assertion');
 
@@ -49,10 +50,9 @@ export function Asserted(ctor: Newable<object>) {
             for (let key in this) {
                 let fn = Reflect.getMetadata(assertionKey, this, key);
                 if (fn) {
-                    console.assert(fn(this[key]));
+                    console.assert(fn(this[key]), `${ctor.name} failed on ${key}`);
                 }
             }
-            console.log("Asserted", this);
         }
     }
 }
@@ -60,14 +60,14 @@ export function Asserted(ctor: Newable<object>) {
 const constructionKey = Symbol('construction');
 
 export function Constructed(ctor: Newable<object>) {
-    return <any>class ConstRuctedClass extends ctor {
+    return <any>class ConstructedClass extends ctor {
         constructor(obj: object) {
             super(obj);
             for (let key in this) {
                 let con = Reflect.getMetadata(constructionKey, this, key);
-                if (con) {
-                    this[key] = new con(this[key]);
-                    console.log("Constructed for", key);
+                let val = this[key];
+                if (con && val && !(val instanceof con)) {
+                    this[key] = new con(val);
                 }
             }
         }
@@ -76,18 +76,20 @@ export function Constructed(ctor: Newable<object>) {
 
 export function NotNull(target: any, key: string | symbol): void {
     Reflect.defineMetadata(assertionKey, (v): boolean => v, target, key);
-    Object.defineProperty(target, key, {
-        enumerable: true,
-        writable: true
-    });
 }
 
 export function Constructive(target: any, key: string | symbol): void {
     let ctor = Reflect.getMetadata("design:type", target, key);
-    console.log("Constructive Type", ctor);
     Reflect.defineMetadata(constructionKey, ctor, target, key);
-    Reflect.defineProperty(target, key, {
-        enumerable: true,
-        writable: true
-    });
+}
+
+export function CheckType(target: any, key: string | symbol) {
+    let ctor = Reflect.getMetadata("design:type", target, key);
+    console.log("Checking:", target);
+    console.log(`Propterty ${key}:`, ctor);
+}
+
+export function Debug(ctor: Newable<object>) {
+    console.log("Class is defined:", ctor.prototype);
+    return <any>ctor;
 }

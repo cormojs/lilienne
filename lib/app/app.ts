@@ -137,26 +137,4 @@ export class App {
     public subscribeStream(conn: Connection, api: API<Stream>): EventEmitter {
         return this.mastodon(conn).stream(api.name, api.query);
     }
-
-
-            // s.on('message', (msg: { event: "update" | "delete" | "notification", data: string }) => {
-            //     if (msg.event === "update") {
-                // let selecteds = (<string[]>[]).concat(source.filters);
-
-                    // let judge = selecteds.length !== 0
-                    //     ? selecteds
-                    //         .map(name => App.filters[name])
-                    //         .reduce((bool: boolean, filter) => {
-                    //             return bool || filter.fn(status);
-                    //         }, false)
-                    //     : true;
-                    // if (judge) {
-                    //     ss.unshift(status);
-                    // } else {
-                    //     console.log(`Dropped ${status.url}`);
-                    // }
-            //     } else {
-            //         console.log(msg.event, JSON.parse(msg.data));
-            //     }
-            // });
 }

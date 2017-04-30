@@ -1,10 +1,10 @@
 import { Registration, Source, API, REST, Stream, Status } from './defs';
-import { monitored } from './decorators';
+import { Monitored } from '../decorators';
 import * as fs from 'fs';
 import * as path from 'path';
 import filters from './filters';
 
-@monitored
+@Monitored
 export default class AppConfig {
     public static saveDir: string = "saved/";
     public static appName: string = "Lilienne";

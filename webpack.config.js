@@ -5,7 +5,7 @@ const extractSass = new ExtractTextPlugin({
 });
 
 module.exports = [{
-    entry: ["./lib/vue-main.ts", "./css/main.scss"],
+    entry: ["./lib/vue/vue-main.ts", "./css/main.scss"],
     target: "electron",
     output: {
         filename: "build.js",

@@ -1,18 +1,17 @@
 import Vue from 'vue';
 import {
     MastNotification, Delete, Status,
-    Source, Stream, REST, API, isRESTAPI,
-    ColumnSettings
-} from './defs';
-import Column from './column';
-import { MastUtil } from './mastutil';
-import { App } from './app';
-import AppConfig from './config';
-import Worker from './worker';
-import filters from './filters'
+    Source, Stream, REST, API, isRESTAPI
+} from '../app/defs';
+import { Column, ColumnSettings } from './column';
+import { MastUtil } from '../app/mastutil';
+import { App } from '../app/app';
+import AppConfig from '../app/config';
+import Worker from '../app/worker';
+import filters from '../app/filters';
 
 
-let statusApp = require('./templates/status');
+let statusApp = require('./status');
 let columnApp = {
     components: {
         status: statusApp,
@@ -174,7 +173,7 @@ let vm = new Vue({
                 conn: source.connection,
                 handlers: {
                     update: [
-                        Worker.columnHandler(column, columnSettings),
+                        column.statusHandler(columnSettings),
                         Worker.consoleLogger()
                     ]
                 }
