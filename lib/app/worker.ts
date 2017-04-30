@@ -5,6 +5,7 @@ import {
     Connection, REST, Source,
     Stream, API, Status, MastNotification, Delete, isRESTAPI
 } from './defs';
+import { MastUtil } from './mastutil';
 
 export type Handlers = {
     update?: [(...ss: Status[]) => void],
@@ -59,7 +60,7 @@ export default class Worker {
                 }
             });
         } else {
-            let stream = this._app
+            let stream = MastUtil
                 .mastodon(conn)
                 .stream(api.name, api.query);
             stream.on('error', e => event.emit('error', e));
