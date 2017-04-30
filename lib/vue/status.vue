@@ -46,15 +46,6 @@ export default {
     mediaSize() {
       return this.bigMediaMode ? 300 : 150;
     },
-    mediaBoxStyle: function () {
-      // let height = this.status.media_attachments.length <= 2
-      //   ? this.mediaSize : this.mediaSize * 2;
-      // return {
-      //   'width': '100%',
-      //   'height': height + 'px'
-      // };
-      return {};
-    },
     styles() {
       let isEven = this.index % 2 === 0;
       return {
