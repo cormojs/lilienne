@@ -19,7 +19,9 @@ function createWindow() {
         slashes: true
     }));
     mainWindow.webContents.openDevTools();
-    mainWindow.on('close', () => { mainWindow = null; });
+    mainWindow.on('close', () => {
+        mainWindow = null;
+    });
 }
 
 app.on('ready', createWindow);

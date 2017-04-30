@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <div id="lilienne">
+  <div id="lilienne" v-if="loaded">
     <div class="initial-settings">
       <div>
         <button @click="saveConfig">Save Config</button>
@@ -24,21 +24,7 @@
         <input type="submit" value="アカウント登録"></input>
       </form>
     </div>
-    <!--<div class="source-add">
-      <form @submit.prevent="addSource(selectedConnection, selectedAPI)" v-if="showAddColumn">
-        <select id="accountSelector" v-model="selectedConnection">
-          <option disabled value="">Select your account</option>
-          <option v-for="(pair, token, i) in app.fetchedAccounts"
-            :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
-        </select>
-        <select v-model="selectedAPI">
-          <option disabled value="">Select API</option>
-          <option v-for="(api, name, i) in app.config.allApi" :key="i" :value="api">{{ name }}</option>
-        </select>
-        <input type="submit" value="ソースを追加" />
-      </form>
-    </div>-->
-    <div class="column-add" v-if="showAddColumn">
+    <div class="column-add">
       <form @submit.prevent="addColumn(selectedConnection, selectedFilter)">
         <div>
           <select id="accountSelector" v-model="selectedConnection">
@@ -57,7 +43,7 @@
       </form>
     </div>
     <div class="columns">
-      <column v-for="(column, i) in columns" :key="i" :index="i" :column="column">
+      <column v-for="(column, i) in vueConfig.columns" :key="i" :index="i" :column="column">
       </column>
     </div>
   </div>

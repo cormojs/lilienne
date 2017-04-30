@@ -2,7 +2,7 @@ import { Registration, Source, API, REST, Stream, Status, Connection } from './d
 import { Monitored } from '../decorators';
 import * as fs from 'fs';
 import * as path from 'path';
-import filters from './filters';
+import defaultFilters from './filters';
 
 @Monitored
 export default class AppConfig {
@@ -10,6 +10,10 @@ export default class AppConfig {
     public static appName: string = "Lilienne";
     public static configJson: string = "lilienne.json";
     public static apiJson: string = "api.json";
+    public static filters: { [key: string]: (s: Status) => boolean } = {
+        'has media': defaultFilters['hasMedia'][1]({}),
+        'none': _ => true
+    }
 
     public registrations: { host?: Registration } = {};
     public accounts: Connection[] = [];
@@ -19,10 +23,6 @@ export default class AppConfig {
         let data: string = fs.readFileSync(path.join(process.cwd(), AppConfig.apiJson), 'utf8');
         return JSON.parse(data);
     })();
-    public filters: { [key: string]: (s: Status) => boolean } = {
-        'has media': filters['hasMedia'][1]({}),
-        'none': _ => true
-    }
 
 
     constructor(name: string = AppConfig.configJson) {

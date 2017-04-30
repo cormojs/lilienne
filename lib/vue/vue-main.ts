@@ -5,12 +5,12 @@ import {
     Source, Stream, REST, API, isRESTAPI, Connection
 } from '../app/defs';
 import { Column, ColumnSettings } from './column';
+import VueConfig from './vue-config';
 import { MastUtil } from '../app/mastutil';
 import { App } from '../app/app';
 import AppConfig from '../app/config';
 import Worker from '../app/worker';
 import filters from '../app/filters';
-
 
 let statusApp = require('./status');
 let columnApp = {
@@ -58,13 +58,12 @@ let columnApp = {
             (<Column>this['column']).save();
         },
         deleteColumn(index: number) {
-            let [c] = (<Column[]>this.$parent.columns).splice(index, 1);
+            let [c] = (<Column[]>this.$parent.vueConfig.columns).splice(index, 1);
             c.close();
         },
         addSource(api: API<REST | Stream>) {
             let column: Column = <Column>this['column'];
             let source: Source = new Source({
-                name: "dummy",
                 connection: column.connection,
                 api: api
             });
@@ -89,7 +88,7 @@ let columnApp = {
                             keep: 1000
                         })
                     ]
-                }, true);
+                }, false);
             }
         }
     }
@@ -103,26 +102,26 @@ let vm = new Vue({
         authUrl: null,
         hostInput: '',
         authCode: '',
-        showAddColumn: false,
+        loaded: false,
         selectedConnection: null,
         selectedAPI: null,
         selectedFilter: _ => true,
-        columnNameInput: ''
+        columnNameInput: '',
+        vueConfig: null
     },
     components: {
         column: columnApp
     },
     methods: {
         initilize: function () {
-            window['debug'] = { streams: {} };
             let app = <App>this['app'];
-
+            this['vueConfig'] = new VueConfig();
             app.config.accounts
                 .reduce((promise, acc) => {
                     return promise.then(() => app.fetchAccount(acc));
                 }, new Promise<any>((r, e) => r()))
                 .then(() => {
-                    this['showAddColumn'] = true;
+                    this['loaded'] = true;
                 });
         },
         openAuth: function () {
@@ -186,22 +185,24 @@ let vm = new Vue({
                 console.error('No authorization code input.')
             }
         },
-        addSource: function (conn: { token: string, host: string }, api: API<REST | Stream>) {
-            console.log(api);
-            let source = {
-                name: `${api.name} in ${conn.host}`,
-                connection: conn,
-                api: api
-            };
-            (<App>this['app']).config.sources.push(source);
-        },
         addColumn: function(connection: Connection, filterName: string) {
             let app = <App>this['app'];
-            let column = new Column(connection.host, connection, filterName);
-            this['columns'].push(column);
+            let column = new Column({
+                title: connection.host,
+                connection: connection,
+                filterName: filterName
+            });
+            (<VueConfig>this['vueConfig']).columns.push(column);
+
         }
     },
     mounted: function () {
         this['initilize']();
+    },
+    beforeDestroy() {
+        let vueConfig = <VueConfig>this['vueConfig'];
+        process.nextTick(() => vueConfig.save());
     }
 });
+
+window.addEventListener('unload', () => vm.$destroy());

@@ -17,11 +17,11 @@ export class Column {
     filterName: string;
     private _statuses: Status[];
 
-    constructor(title: string, conn: Connection, filterName: string) {
-        this.title = title;
-        this.connection = conn;
+    constructor(o: { title: string, connection: Connection, filterName: string }) {
+        this.title = o.title;
+        this.connection = o.connection;
         this._statuses = [];
-        this.filterName = filterName;
+        this.filterName = o.filterName;
     }
 
     get statuses(): Status[] {
@@ -45,8 +45,9 @@ export class Column {
     statusHandler(option: ColumnSettings): (...ss: Status[]) => void {
         return (...ss: Status[]) => {
             let statuses = ss;
-            if (option.filter) {
-                statuses = statuses.filter(option.filter);
+            let filter = AppConfig.filters[this.filterName];
+            if (filter) {
+                statuses = statuses.filter(s => filter(s.actual));
             }
             if (option.compare) {
                 statuses = statuses.sort(option.compare);

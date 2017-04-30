@@ -32,6 +32,7 @@
 
 <script>
 import { clipboard, shell } from 'electron';
+import { MastUtil } from '../app/mastutil';
 export default {
   props: ["status", "index", 'columnSize'],
   data: function () {
@@ -101,7 +102,7 @@ export default {
     },
     fav(s) {
       let c = this.$parent.column;
-      let m = this.$parent.$parent.app.mastodon(c.connection);
+      let m = MastUtil.mastodon(c.connection);
       m
         .post("statuses/:id/favourite", { id: s.id })
         .catch(err => console.error(err))

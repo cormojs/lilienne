@@ -52,7 +52,6 @@ export type Connection = { token: string, host: string }
 @Assigned
 @Sealed
 export class Source {
-    name: string;
     connection: Connection;
     api: API<REST | Stream>;
     constructor(obj: object) { }
