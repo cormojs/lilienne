@@ -4,7 +4,7 @@
     <div class="header">
       <div class="boosted" v-if="status.reblog">
         <i class="icon material-icons">cached</i>
-        {{ `${status.account.username} was boosted` }}
+        <span>{{ `${status.account.username} was boosted` }}</span>
       </div>
       <span class="left">
           <span class="account-username">{{ actual.account.username }}</span>
@@ -45,15 +45,13 @@ export default {
   props: ["status", "index", 'columnSize'],
   data: function () {
     return {
-      bigMediaMode: true
+      bigMediaMode: false,
+      faved: this.status.actual.faved === true ? true : false
     };
   },
   computed: {
     actual() {
       return this.status.actual;
-    },
-    faved() {
-      return this.status.actual.faved === true ? true : false;
     },
     mediaSize() {
       return this.bigMediaMode ? 300 : 150;
