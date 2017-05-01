@@ -4,11 +4,11 @@
         $size: 150px;
         $offsetX: 60px;
         font-family: sans-serif;
-        font-size: 12pt;
+        font-size: 10pt;
         border: solid 1px black;
         padding-left: $offsetX;
         position: relative;
-        .avator {
+        .avatar {
             position: absolute;
             left: 5px;
             top: 5px;
@@ -50,6 +50,7 @@
             }
             .created_at {
                 float: right;
+                margin-right: 5px;
                 a {
                     font-size: 10pt;
                     color: #111;
@@ -86,6 +87,9 @@
                     color: grey;
                 }
             }
+        }
+        .content {
+            font-size: 10pt;
         }
     }
 
