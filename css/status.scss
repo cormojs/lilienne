@@ -4,6 +4,7 @@
         $size: 150px;
         $offsetX: 60px;
         font-family: sans-serif;
+        font-size: 12pt;
         border: solid 1px black;
         padding-left: $offsetX;
         position: relative;
@@ -44,12 +45,15 @@
                 }
                 .fired {
                     font-weight: bold;
+                    color: pink;
                 }
             }
             .created_at {
                 float: right;
-                font-size: 10pt;
-                color: #111;
+                a {
+                    font-size: 10pt;
+                    color: #111;
+                }
             }
         }
 
@@ -57,6 +61,13 @@
 
         
         .header {
+            font-size: 10pt;
+            .boosted {
+                color: grey;
+                .icon {
+                    font-size: 10pt;
+                }
+            }
             .left {
                 margin-right: auto;
                 .account-username {

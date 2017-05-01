@@ -2,8 +2,12 @@
   <div class="status" :class="styles">
     <div class="avatar" :style="avatarStyle(actual)"></div>
     <div class="header">
+      <div class="boosted" v-if="status.reblog">
+        <i class="icon material-icons">cached</i>
+        {{ `${status.account.username} was boosted` }}
+      </div>
       <span class="left">
-                <span class="account-username">{{ actual.account.username }}</span>
+          <span class="account-username">{{ actual.account.username }}</span>
       <span class="account-display_name">{{ actual.account.display_name }}</span>
       </span>
       <span class="right">
@@ -14,18 +18,22 @@
     <div v-if="actual.media_attachments.length !== 0" class="media">
       <template v-for="(media, i) in actual.media_attachments">
         <div class="thumbnail-container">
-          <a href="#" @click="openMedia(media)" class="thumbnail" :style="thumbnailStyle(media)"></a>
+          <a href="#" @click="openUrl(media.remote_url || media.url)" class="thumbnail" :style="thumbnailStyle(media)"></a>
         </div>
       </template>
     </div>
     <div class="footer">
       <span class="actions">
-                <i class="action material-icons">chat_bubble_outline</i>
-                <i class="action material-icons">cached</i>
-                <i class="action material-icons" :class="fire(actual)" @click="fav(actual)">{{ faved === true ? 'favorite' : 'favorite_border' }}</i>
-                <i class="action material-icons" @click="copy(status)">content_copy</i>
-              </span>
-      <span class="created_at">{{ new Date(actual.created_at).toLocaleString() }}</span>
+        <i class="action material-icons">chat_bubble_outline</i>
+        <i class="action material-icons">cached</i>
+        <i class="action material-icons" :class="fire(actual)" @click="fav(actual)">{{ faved === true ? 'favorite' : 'favorite_border' }}</i>
+        <i class="action material-icons" @click="copy(status)">content_copy</i>
+      </span>
+      <span class="created_at">
+        <a href="#" @click="openUrl(status.url)">
+          {{ new Date(actual.created_at).toLocaleString() }}
+        </a>
+      </span>
     </div>
   </div>
 </template>
@@ -37,13 +45,15 @@ export default {
   props: ["status", "index", 'columnSize'],
   data: function () {
     return {
-      bigMediaMode: true,
-      faved: null,
+      bigMediaMode: true
     };
   },
   computed: {
     actual() {
       return this.status.actual;
+    },
+    faved() {
+      return this.status.actual.faved === true ? true : false;
     },
     mediaSize() {
       return this.bigMediaMode ? 300 : 150;
@@ -78,8 +88,7 @@ export default {
         'background-size': 'cover'
       };
     },
-    openMedia(media) {
-      let url = media.remote_url || media.url;
+    openUrl(url) {
       shell.openExternal(url);
     },
     log() {
