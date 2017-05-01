@@ -2,7 +2,7 @@ import {
     Assigned, Sealed, Filled,
     Asserted, NotNull,
     Constructed, Constructive, CheckType, Debug,
-    Monitored, Recursive
+    Monitored, Recursive, PrimitiveValue
 } from '../decorators'
 import * as fs from 'fs';
 import * as path from 'path';
@@ -103,8 +103,8 @@ export type Tag = {
 @Asserted
 @Assigned
 export class Status {
-    @NotNull
     @Constructive
+    @NotNull
     account: Account;
     @NotNull
     id: number;
@@ -117,6 +117,8 @@ export class Status {
     tags: Tag[];
     @NotNull
     content: string;
+    @PrimitiveValue
+    @Constructive
     favourited: boolean;
 
     constructor(obj: object) {}
@@ -129,11 +131,7 @@ export class Status {
          });
      }
 
-     get actual(): this {
-         if (this.reblog) {
-             console.log("reblog:", this.reblog);
-             console.log("content:", this.reblog.contentSanitized);
-         }
+     get actual(): Status {
          return this.reblog || this;
      }
 };

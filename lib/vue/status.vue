@@ -44,9 +44,10 @@ import { MastUtil } from '../app/mastutil';
 export default {
   props: ["status", "index", 'columnSize'],
   data: function () {
+    console.log(this.status.actual);
     return {
       bigMediaMode: false,
-      faved: this.status.actual.faved === true ? true : false
+      faved: this.status.actual.favourited === true ? true : false
     };
   },
   computed: {
@@ -77,7 +78,7 @@ export default {
     },
     avatarStyle(s) {
       if (!s.account) {
-        console.error("account not found", this['status']);
+        console.error("account not found", s);
         return {};
       }
       return {

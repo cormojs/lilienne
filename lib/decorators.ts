@@ -59,6 +59,7 @@ export function Asserted(ctor: Newable<object>) {
 
 const constructionKey = Symbol('construction');
 const recursiveKey = Symbol('recursion');
+const primitiveKey = Symbol('primitive');
 
 export function Constructed(ctor: Newable<object>) {
     return <any>class ConstructedClass extends ctor {
@@ -67,12 +68,17 @@ export function Constructed(ctor: Newable<object>) {
             for (let key in this) {
                 let con = Reflect.getMetadata(constructionKey, this, key);
                 let val = this[key];
-                if (con && val && val !== null) {
+                if (con) {
                     if (con === recursiveKey) {
-                        console.log(`${key} recusively constructed:`, con, val);
-                        this[key] = <any>new ConstructedClass(<any>val);
+                        if (val !== null) {
+                            console.log(`${key} recusively constructed:`, con, val);
+                            this[key] = <any>new ConstructedClass(<any>val);
+                        }
                     } else if (!(val instanceof con)) {
                         this[key] = new con(val);
+                    }
+                    if (Reflect.getMetadata(primitiveKey, this, key)) {
+                        this[key] = (<any>this[key]).valueOf()
                     }
                 }
             }
@@ -87,6 +93,10 @@ export function NotNull(target: any, key: string | symbol): void {
 export function Constructive(target: any, key: string | symbol): void {
     let ctor = Reflect.getMetadata("design:type", target, key);
     Reflect.defineMetadata(constructionKey, ctor, target, key);
+}
+
+export function PrimitiveValue(target: any, key: string | symbol): void {
+    Reflect.defineMetadata(primitiveKey, true, target, key);
 }
 
 export function Recursive(target: any, key: string | symbol): void {
