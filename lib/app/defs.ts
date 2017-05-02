@@ -81,7 +81,7 @@ export class Account {
         let m = this.acct.match(/@(.+)$/);
         return m ? m[1] : "";
     }
-    constructor(obj: object) {}
+    constructor(obj: object) { }
 }
 
 export type MastNotification = object;
@@ -121,17 +121,28 @@ export class Status {
     @Constructive
     favourited: boolean;
 
-    constructor(obj: object) {}
+    constructor(obj: object) { }
     get contentSanitized(): string {
-         return sanitizeHtml(this.content, {
-             allowedTags: ['a'],
-             allowedAttributes: {
-                 'a': [ 'href' ]
-             }
-         });
-     }
+        return sanitizeHtml(this.content, {
+            allowedTags: [],
+            allowedAttributes: {
+                'a': ['href', 'v-on:click']
+            },
+            transformTags: {
+                'a': (tagName, attrs) => {
+                    return {
+                        tagName: tagName,
+                        attribs: {
+                            'v-on:click': `openUrl(${attrs['href']})`,
+                            'href': '#'
+                        }
+                    };
+                }
+            }
+        });
+    }
 
-     get actual(): Status {
-         return this.reblog || this;
-     }
+    get actual(): Status {
+        return this.reblog || this;
+    }
 };

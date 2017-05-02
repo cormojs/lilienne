@@ -34,8 +34,8 @@ export class Column {
             .replace(/\//g, "")
             .replace(/:/g, "");
         let filename = path.join(process.cwd(), dir, `${datetime}.json`);
-        fs.writeFileSync(filename, JSON.stringify(this.statuses));
-        console.log(`Toots saved to ${filename}`);
+        fs.writeFileSync(filename, JSON.stringify(this._statuses), { encoding: 'utf8' });
+        console.log(`Toots saved to ${filename}`, this._statuses);
     }
 
     close() {
@@ -54,17 +54,17 @@ export class Column {
             }
             for (let status of statuses) {
                 if (option.method === 'push') {
-                    this.statuses.push(status);
+                    this._statuses.push(status);
                 } else if (option.method === 'unshift') {
-                    this.statuses.unshift(status);
+                    this._statuses.unshift(status);
                 } else if (option.method === 'splice') {
-                    this.statuses.splice(status.id, 0, status);
+                    this._statuses.splice(status.id, 0, status);
                 }
             }
             if (option.keep) {
                 let len = this.statuses.length;
                 if (len > option.keep) {
-                    this.statuses.splice(option.keep - 1, len - option.keep);
+                    this._statuses.splice(option.keep - 1, len - option.keep);
                 }
             }
         };

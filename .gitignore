@@ -1,6 +1,7 @@
 *~
 node_modules/
 main.js
+down.js
 lilienne.json
 view.json
 saved/*json

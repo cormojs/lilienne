@@ -113,10 +113,12 @@ export class App {
         }
         let rec = (query: Query, n: number): Promise<void> => {
             if (n === 0) {
+                console.log('Limit exceeded');
                 return new Promise<void>((r, _) => { });
             } else {
                 return push(query).then<void>(newQuery => {
                     if (newQuery) {
+                        console.log('Next page');
                         setTimeout(() => rec(newQuery, n - 1), 1000);
                     } else {
                         console.log('Pagination Completed');

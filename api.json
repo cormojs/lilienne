@@ -31,10 +31,10 @@
         },
         "name": "timelines/home"
     },
-    "REST Favs": {
+    "REST Favs(30 times)": {
         "form": {
             "update_min": null,
-            "auto_page": 20
+            "auto_page": 30
         },
         "name": "favourites"
     }

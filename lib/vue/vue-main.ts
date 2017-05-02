@@ -58,7 +58,7 @@ let columnApp = {
                 <span class="title">{{ column.title }}</span>
             </div>
             <div>
-                <button @click="saveToots()">Save</button>
+                <button @click="saveToots(column)">Save</button>
             </div>
             <form @submit.prevent="addSource(selectedAPI)">
                 <select class="source-selector" v-model="selectedAPI">
@@ -95,8 +95,8 @@ let columnApp = {
                 height: el.offsetHeight
             };
         },
-        saveToots() {
-            (<Column>this['column']).save();
+        saveToots(column: Column) {
+            column.save();
         },
         deleteColumn(index: number) {
             let [c] = (<Column[]>this.$parent.vueConfig.columns).splice(index, 1);
@@ -117,9 +117,9 @@ let columnApp = {
                             filter: _ => true,
                             compare: (s1, s2) => s2.id - s1.id
                         }),
-                        (..._: Status[]) => event.removeAllListeners()
+                        Worker.consoleLogger()
                     ]
-                }, true);
+                }, false);
             } else {
                 event.listen({
                     update: [

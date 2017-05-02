@@ -5,7 +5,7 @@
         "noImplicitAny": false,
         "sourceMap": false,
         "typeRoots": ["node_modules/@types", "types"],
-        "outDir": "./build/",
+        "outDir": "./",
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
         "alwaysStrict": true,
@@ -14,5 +14,9 @@
     },
     "include": [
         "./lib/**/*"
+    ],
+    "files": [
+        "./main.ts",
+        "./down.ts"
     ]
 }
