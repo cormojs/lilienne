@@ -14,9 +14,9 @@
         "name": "streaming/public/local",
         "query": {}
     },
-    "REST Public(local) per 1 min": {
+    "REST Public(local)": {
         "form": {
-            "update_min": 1,
+            "update_min": null,
             "auto_page": 1
         },
         "name": "timelines/public",
