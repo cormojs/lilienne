@@ -23,6 +23,7 @@
     "extract-text-webpack-plugin": "^2.1.0",
     "mastodon-api": "cormojs/mastodon-api#new-parser",
     "node-sass": "^4.5.2",
+    "prominence": "^0.2.0",
     "reflect-metadata": "^0.1.10",
     "sanitize-html": "^1.14.1",
     "sass-loader": "^6.0.3",

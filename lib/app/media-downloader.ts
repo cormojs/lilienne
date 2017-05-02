@@ -1,8 +1,17 @@
-import * as fs from 'fs';
+import * as _fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
+import * as http from 'http';
+import * as prominence from 'prominence';
 
 import { Status } from './defs';
+
+let fs = prominence(_fs);
+let err = str => e => console.error(str, e);
+
+function isVoid(v: any): v is void {
+    return v === void 0;
+}
 
 export default class MediaDownloader {
     statuses: Status[] = [];
@@ -13,7 +22,7 @@ export default class MediaDownloader {
         }
     }
 
-    download(dirName: string = "files") {
+    async download(dirName: string = "files") {
         let dir = path.join(process.cwd(), dirName);
         for (let s of this.statuses) {
             for (let m of s.media_attachments) {
@@ -23,26 +32,36 @@ export default class MediaDownloader {
                     console.error(`cannot match: ${url}`);
                 } else {
                     let filename: string = path.join(dir, result[1]);
-                    fs.exists(filename, r => {
-                        if (r) {
-                            console.log(`File already exists: ${filename}`);
-                        } else {
-                            setTimeout(() => {
-                                https.get(url, resp => {
-                                    console.log(`Saving to ${filename}`);
-                                    let stream = fs.createWriteStream(filename, {
-                                        flags: 'w',
-                                        encoding: 'binary',
-                                        autoClose: true
-                                    });
+                    if (await fs.exists(filename).catch(_ => _)) {
+                        console.log(`File already exists: ${filename}`);
+                    } else {
+                        console.log(`Saving to ${filename}`);
+                        let stream = _fs.createWriteStream(filename, {
+                            flags: 'w',
+                            encoding: 'binary',
+                            autoClose: true
+                        });
 
-                                    resp.on('data', chunk => {
-                                        stream.write(chunk);
-                                    });
+                        let resp = await new Promise<http.IncomingMessage>((r, e) => {
+                            https.get(url, r);
+                        }).catch(err("resp error:"));
+
+                        let a = await new Promise((resolve, reject) => {
+                            if (resp instanceof Object) {
+                                resp.on('data', d => stream.write(d));
+                                resp.on('end', () => {
+                                    stream.end();
+                                    resolve({});
                                 });
-                            }, 100);
-                        }
-                    });
+                                resp.on('error', e => {
+                                    console.error("resp error:", e);
+                                    reject();
+                                });
+                            }
+                        }).catch(e => console.error('exit on', e));
+                        let sleep = new Promise((resolve, reject) => { setTimeout(() => resolve(), 250) });
+                        let v = await sleep.catch(_ => _);
+                    }
                 }
             }
         }
