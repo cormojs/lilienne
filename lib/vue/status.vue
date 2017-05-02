@@ -44,7 +44,6 @@ import { MastUtil } from '../app/mastutil';
 export default {
   props: ["status", "index", 'columnSize'],
   data: function () {
-    console.log(this.status.actual);
     return {
       bigMediaMode: false,
       faved: this.status.actual.favourited === true ? true : false

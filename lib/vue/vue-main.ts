@@ -52,19 +52,27 @@ let columnApp = {
     },
     template: `
       <div class="column" :value="columnSize" @resize="() => { columnSize = getSize() }" >
-        <button @click="saveToots()">Save</button>
-        <button @click="deleteColumn(parseInt(index))">X</button>
-        <form @submit.prevent="addSource(selectedAPI)">
-          <select id="sourceSelector" v-model="selectedAPI">
-            <option disabled value="">Select</option>
-            <option v-for="(api, name, i) in $parent.app.config.allApi" :key="i" :value="api">{{ name }}</option>
-          </select>
-          <input type="submit" value="read" />          
-        </form>
-        <div class="header">{{ column.title }}</div>
+        <div class="header">
+            <div>
+                <button @click="deleteColumn(parseInt(index))">X</button>
+                <span class="title">{{ column.title }}</span>
+            </div>
+            <div>
+                <button @click="saveToots()">Save</button>
+            </div>
+            <form @submit.prevent="addSource(selectedAPI)">
+                <select class="source-selector" v-model="selectedAPI">
+                    <option disabled value="">Select</option>
+                    <option v-for="(api, name, i) in $parent.app.config.allApi" :key="i" :value="api">{{ name }}</option>
+                </select>
+                <input type="submit" value="read" />          
+            </form>
+        </div>
         <div class="scrollable">
-          <status v-for="(status, index) in column.statuses" :key="index"
-                  :index="column.statuses.length - index" :status="status" :column-size="columnSize"></status>
+          <template v-for="(status, index) in column.statuses">
+            <status :index="column.statuses.length - index" :status="status" :column-size="columnSize"></status>
+            <div class="clear"></div>
+          </template>
         </div>
       </div>
     `,

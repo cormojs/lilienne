@@ -10,38 +10,40 @@
 
 <body>
   <div id="lilienne" v-if="loaded">
-    <div class="initial-settings">
-      <div>
-        <button @click="saveConfig">Save Config</button>
-      </div>
-      <form @submit.prevent="register">
-        <input v-model.trim="hostInput" placeholder="example.com"></input>
-        <input type="submit" value="App登録"></input>
-      </form>
-      <a v-if="authUrl" href="#" @click="openAuth()">認証ページを開く</a>
-      <form @submit.prevent="addAccount">
-        <input v-model.trim="authCode" placeholder="input code"></input>
-        <input type="submit" value="アカウント登録"></input>
-      </form>
-    </div>
-    <toot></toot>
-    <div class="column-add">
-      <form @submit.prevent="addColumn(selectedConnection, selectedFilter)">
+    <div class="header">
+      <div class="initial-settings">
         <div>
-          <select id="accountSelector" v-model="selectedConnection">
+          <button @click="saveConfig">Save Config</button>
+        </div>
+        <form @submit.prevent="register">
+          <input v-model.trim="hostInput" placeholder="example.com"></input>
+          <input type="submit" value="App登録"></input>
+        </form>
+        <a v-if="authUrl" href="#" @click="openAuth()">認証ページを開く</a>
+        <form @submit.prevent="addAccount">
+          <input v-model.trim="authCode" placeholder="input code"></input>
+          <input type="submit" value="アカウント登録"></input>
+        </form>
+      </div>
+      <toot></toot>
+      <div class="column-add">
+        <form @submit.prevent="addColumn(selectedConnection, selectedFilter)">
+          <div>
+            <select id="accountSelector" v-model="selectedConnection">
             <option disabled value="">Select your account</option>
             <option v-for="(pair, token, i) in app.fetchedAccounts"
               :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
           </select>
-        </div>
-        <div>
-          <template v-for="(filter, name) in app.config.filters">
-            <input type="radio" :id="name" :value="name" v-model="selectedFilter">
-            <label :for="name">{{ name }}</label>
-          </template>
-        </div>
-        <input type="submit" value="カラムを追加" />
-      </form>
+          </div>
+          <div>
+            <template v-for="(filter, name) in app.config.filters">
+              <input type="radio" :id="name" :value="name" v-model="selectedFilter">
+              <label :for="name">{{ name }}</label>
+            </template>
+          </div>
+          <input type="submit" value="カラムを追加" />
+        </form>
+      </div>
     </div>
     <div class="columns">
       <column v-for="(column, i) in vueConfig.columns" :key="i" :index="i" :column="column">

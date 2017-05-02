@@ -1,11 +1,28 @@
 @import './status.scss';
 
 #lilienne {
-    .initial-settings {
-        display: flex;
-        > * {
-            margin-left: 5px;
+//    $main-font-gothic: "メイリオ", "Meiryo", arial, sans-serif;
+    $main-font-gothic: "游ゴシック体", "Yu Gothic", arial, sans-serif;
+    font-family: $main-font-gothic;
+    height: 100%;
+    button, input, select, textarea {
+        font-family: $main-font-gothic;
+    }
+    .clear {
+        clear: both;
+        visibility: hidden;
+        height: 0;
+    }
+
+    & > .header {
+        height: 15vh;
+        .initial-settings {
+            display: flex;
+            & > * {
+                margin-left: 5px;
+            }
         }
     }
     @import './columns.scss';
+
 }
