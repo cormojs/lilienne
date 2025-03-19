@@ -5,7 +5,7 @@ import * as url from "url";
 let mainWindow: Electron.BrowserWindow;
 
 function createWindow() {
-  let mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 1000,
     webPreferences: {

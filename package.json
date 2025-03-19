@@ -15,18 +15,15 @@
   },
   "homepage": "https://github.com/cormojs/lilienne#readme",
   "devDependencies": {
-    "@types/electron": "^1.6.12",
-    "@types/node": "^7.10.14",
+    "@types/node": "^22.13.10",
     "css-loader": "^0.28.11",
     "dart-sass": "^1.25.0",
-    "electron": "^1.8.8",
-    "electron-devtools-installer": "^2.2.4",
-    "extract-text-webpack-plugin": "^2.1.2",
-    "mastodon-api": "cormojs/mastodon-api#new-parser",
+    "electron": "^35.0.2",
+    "masto": "^6.10.3",
     "prettier": "^3.5.3",
     "prominence": "^0.2.0",
     "reflect-metadata": "^0.1.14",
-    "sanitize-html": "^1.27.5",
+    "sanitize-html": "^2.14.0",
     "sass-loader": "^6.0.7",
     "style-loader": "^0.16.1",
     "ts-loader": "^2.3.7",
@@ -35,6 +32,6 @@
     "vue": "^2.7.16",
     "vue-loader": "^11.3.4",
     "vue-template-compiler": "^2.7.16",
-    "webpack": "^2.7.0"
+    "webpack": "^5.98.0"
   }
 }
