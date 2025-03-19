@@ -41,13 +41,15 @@ let tootApp = {
   methods: {
     toot(conn: Connection, content: string) {
       if (conn && content) {
-        MastUtil.mastodon(conn)
-          .post("statuses", { status: content })
-          .catch((e) => console.error(e))
-          .then((result) => {
-            console.log("tooted:", result);
-            this.content = null;
-          });
+        const client = MastUtil.mastodon(conn);
+        client.v1.statuses.create({
+          status: content
+        })
+        .catch((e) => console.error(e))
+        .then((result) => {
+          console.log("tooted:", result);
+          this.content = null;
+        });
       }
     },
   },
@@ -95,7 +97,7 @@ let columnApp = {
   methods: {
     getSize() {
       console.log("columnApp resized");
-      let el = (<Vue>this).$el;
+      let el = ((<Vue>this).$el) as HTMLElement;
       return {
         width: el.offsetWidth,
         height: el.offsetHeight,
@@ -124,7 +126,7 @@ let columnApp = {
                 filter: (_) => true,
                 compare: (s1, s2) => s2.id - s1.id,
               }),
-              Worker.consoleLogger(),
+              Worker.consoleLogger<Status>(),
             ],
           },
           false,
@@ -175,7 +177,7 @@ let vm = new Vue({
           (promise, acc) => {
             return promise.then(() => app.fetchAccount(acc));
           },
-          new Promise<any>((r, e) => r()),
+          new Promise<any>((r, e) => r({})),
         )
         .then(() => {
           this["loaded"] = true;

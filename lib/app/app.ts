@@ -87,30 +87,44 @@ export class App {
     api: API<REST>,
     callback: (err: any, ...ss: Status[]) => void,
   ): Promise<void> {
-    let push = (query: Query): Promise<Query> => {
-      return MastUtil.mastodon(conn, App.timeout_ms)
-        .get(api.name, query)
-        .catch((e) => callback(e))
-        .then<Query>((res: { resp: object; data: Status[] }) => {
-          if (!res || !res.data || res.data.length === 0) {
-            return new Promise<Query>((r, e) => r(query));
-          } else {
-            callback(null, ...res.data.map((d) => new Status(d)));
-            return new Promise<Query>((resolve, reject) => {
-              let link = res.resp["headers"]["link"];
-              let test = link ? link.match(/^<[^<>?]+\?max_id=([0-9]+)>/) : [];
-
-              if (test && test.length > 1) {
-                let id = parseInt(test[1]);
-                let q = query;
-                q["max_id"] = id;
-                return resolve(q);
-              } else {
-                return resolve(query);
-              }
-            });
-          }
-        });
+    let push = async (query: Query): Promise<Query> => {
+      try {
+        const client = MastUtil.mastodon(conn, App.timeout_ms);
+        // Use appropriate endpoint based on API name
+        let response;
+        const params = query as Record<string, any>;
+        
+        switch(api.name) {
+          case 'timelines/home':
+            response = await client.v1.timelines.home.list(params);
+            break;
+          case 'timelines/public':
+            response = await client.v1.timelines.public.list(params);
+            break;
+          // Add other endpoints as needed
+          default:
+            throw new Error(`Unsupported API endpoint: ${api.name}`);
+        }
+        
+        if (!response || response.length === 0) {
+          return query;
+        }
+        
+        const statuses = response.map(s => new Status(s));
+        callback(null, ...statuses);
+        
+        // Handle pagination if available
+        if (response.length > 0) {
+          const lastId = response[response.length - 1].id;
+          const q = { ...query, max_id: lastId };
+          return q;
+        } else {
+          return query;
+        }
+      } catch (e) {
+        callback(e);
+        return query;
+      }
     };
     let rec = (query: Query, n: number): Promise<void> => {
       if (n === 0) {
@@ -131,6 +145,59 @@ export class App {
   }
 
   public subscribeStream(conn: Connection, api: API<Stream>): EventEmitter {
-    return MastUtil.mastodon(conn).stream(api.name, api.query);
+    // Create an event emitter to mimic the stream interface
+    const emitter = new EventEmitter();
+    
+    // Use WebSocket if available in the future
+    // For now, set up polling as a fallback
+    const pollInterval = 10000; // 10 seconds
+    let lastId: string | null = null;
+    
+    const poll = async () => {
+      try {
+        const client = MastUtil.mastodon(conn);
+        const params: Record<string, any> = { ...api.query };
+        
+        if (lastId) {
+          params.since_id = lastId;
+        }
+        
+        // Use appropriate endpoint based on API name
+        let response;
+        switch(api.name) {
+          case 'streaming/user':
+            response = await client.v1.timelines.home.list(params);
+            break;
+          case 'streaming/public':
+            response = await client.v1.timelines.public.list(params);
+            break;
+          // Add other endpoints as needed
+          default:
+            emitter.emit('error', new Error(`Unsupported streaming endpoint: ${api.name}`));
+            return;
+        }
+        
+        if (response && response.length > 0) {
+          // Update the last ID for the next poll
+          lastId = response[0].id;
+          
+          // Emit events in reverse order (oldest to newest)
+          for (let i = response.length - 1; i >= 0; i--) {
+            const status = new Status(response[i]);
+            emitter.emit('update', status);
+          }
+        }
+      } catch (error) {
+        emitter.emit('error', error);
+      }
+      
+      // Schedule the next poll
+      setTimeout(poll, pollInterval);
+    };
+    
+    // Start polling
+    poll();
+    
+    return emitter;
   }
 }

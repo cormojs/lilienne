@@ -15,10 +15,10 @@ import {
 import { MastUtil } from "./mastutil";
 
 export type Handlers = {
-  update?: [(...ss: Status[]) => void];
-  errror?: [(e: any) => void];
-  notification?: [(n: MastNotification) => void];
-  delete?: [(d: Delete) => void];
+  update?: ((...ss: Status[]) => void)[];
+  errror?: ((e: any) => void)[];
+  notification?: ((n: MastNotification) => void)[];
+  delete?: ((d: Delete) => void)[];
 };
 
 export type Subscribe = {
@@ -65,12 +65,12 @@ export default class Worker {
         }
       });
     } else {
-      let stream = MastUtil.mastodon(conn).stream(api.name, api.query);
+      // Get the stream emitter from App's implementation
+      let stream = this._app.subscribeStream(conn, api);
+      
+      // Forward all events from the stream to our event emitter
       stream.on("error", (e) => event.emit("error", e));
-      stream.on("update", (msg: { data: string }) => {
-        let json = JSON.parse(msg.data);
-        event.emit("update", new Status(json));
-      });
+      stream.on("update", (status: Status) => event.emit("update", status));
       stream.on("delete", (d) => event.emit("delete", d));
       stream.on("notification", (n) => event.emit("notification", n));
     }

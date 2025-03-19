@@ -45,7 +45,7 @@ export class Column {
   }
 
   close() {
-    delete this._statuses;
+    this._statuses = [];
   }
 
   statusHandler(option: ColumnSettings): (...ss: Status[]) => void {

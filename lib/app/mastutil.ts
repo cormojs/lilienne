@@ -1,4 +1,4 @@
-import * as Mast from "mastodon-api";
+import { createRestAPIClient } from "masto";
 import * as fs from "fs";
 import { EventEmitter } from "events";
 import { Registration, Connection } from "./defs";
@@ -7,53 +7,93 @@ export namespace MastUtil {
   export const defaultRedirect = "urn:ietf:wg:oauth:2.0:oob";
   export const apiBase = "/api/v1/";
 
-  export function createApp(
+  export async function createApp(
     host: string,
     name: string,
     scopes = "read write follow",
     redirectUri = defaultRedirect,
   ): Promise<Registration> {
-    return Mast.createOAuthApp(
-      "https://" + host + apiBase + "apps",
-      name,
-      scopes,
-      redirectUri,
-    ).then((o) => new Registration(o));
+    const client = createRestAPIClient({
+      url: "https://" + host,
+    });
+    
+    try {
+      const app = await client.v1.apps.create({
+        clientName: name,
+        scopes,
+        redirectUris: redirectUri,
+      });
+      
+      return new Registration({
+        client_id: app.clientId,
+        client_secret: app.clientSecret,
+        id: "0", // Default placeholder since the property structure is different
+        redirect_uri: redirectUri
+      });
+    } catch (error) {
+      console.error("Error creating app:", error);
+      throw error;
+    }
   }
 
-  export function getAuthUrl(
+  export async function getAuthUrl(
     r: Registration,
     host: string,
     scope = "read write follow",
     redirectUri = defaultRedirect,
   ): Promise<string> {
-    return Mast.getAuthorizationUrl(
-      r.client_id,
-      r.client_secret,
-      "https://" + host,
+    const params = new URLSearchParams({
+      client_id: r.client_id,
+      redirect_uri: redirectUri,
+      response_type: 'code',
       scope,
-      redirectUri,
-    );
+    });
+    
+    return `https://${host}/oauth/authorize?${params.toString()}`;
   }
 
-  export function getAccessToken(
+  export async function getAccessToken(
     r: Registration,
     host: string,
     code: string,
   ): Promise<string> {
-    return Mast.getAccessToken(
-      r.client_id,
-      r.client_secret,
-      code,
-      "https://" + host,
-    );
+    const client = createRestAPIClient({
+      url: "https://" + host,
+    });
+    
+    try {
+      // Using OAuth token endpoint directly since masto doesn't have a direct method
+      const response = await fetch(`https://${host}/oauth/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: r.client_id,
+          client_secret: r.client_secret,
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: r.redirect_uri
+        })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`OAuth error: ${data.error}`);
+      }
+      
+      return data.access_token;
+    } catch (error) {
+      console.error("Error getting access token:", error);
+      throw error;
+    }
   }
 
-  export function mastodon(conn: Connection, timeout_ms?: number): Mast {
-    return new Mast({
-      access_token: conn.token,
-      timeout_ms: timeout_ms,
-      api_url: "https://" + conn.host + "/api/v1/",
+  export function mastodon(conn: Connection, timeout_ms?: number) {
+    return createRestAPIClient({
+      url: "https://" + conn.host,
+      accessToken: conn.token,
+      timeout: timeout_ms,
     });
   }
 }

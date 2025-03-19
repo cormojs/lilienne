@@ -67,10 +67,10 @@ export default class AppConfig {
   }
 
   private static construct<T, R>(
-    obj: { key?: T },
-    ctor: new (T) => R,
-  ): { key?: R } {
-    let o: { key?: R } = {};
+    obj: { [key: string]: T },
+    ctor: new (t: T) => R,
+  ): { [key: string]: R } {
+    let o: { [key: string]: R } = {};
     for (let key in obj) {
       o[key] = new ctor(obj[key]);
     }
