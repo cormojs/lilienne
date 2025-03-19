@@ -9,8 +9,9 @@
     "experimentalDecorators": true,
     "alwaysStrict": true,
     "strictNullChecks": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "noEmit": true
   },
   "include": ["./lib/**/*"],
-  "files": ["./main.ts", "./down.ts"]
+  "files": ["./lib/app/app.ts", "./main.ts", "./down.ts"]
 }

@@ -4,6 +4,9 @@
   "description": "Desktop Mastodon Client",
   "main": "main",
   "typings": "main",
+  "scripts": {
+    "start": "electron ."
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cormojs/lilienne.git"
