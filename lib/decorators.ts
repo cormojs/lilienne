@@ -104,13 +104,13 @@ export function PrimitiveValue(target: any, key: string | symbol): void {
 
 export function Recursive(target: any, key: string | symbol): void {
   Reflect.defineMetadata(constructionKey, recursiveKey, target, key);
-  console.log(`Recursive ${key}`, target);
+  console.log(`Recursive ${String(key)}`, target);
 }
 
 export function CheckType(target: any, key: string | symbol) {
   let ctor = Reflect.getMetadata("design:type", target, key);
   console.log("Checking:", target);
-  console.log(`Propterty ${key}:`, ctor);
+  console.log(`Propterty ${String(key)}:`, ctor);
 }
 
 export function Debug(ctor: Newable<object>) {
