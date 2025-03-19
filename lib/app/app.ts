@@ -15,7 +15,7 @@ import {
 } from "./defs";
 import AppConfig from "./config";
 import * as fs from "fs";
-import * as Mast from "mastodon-api";
+import { createRestAPIClient } from "masto";
 import { EventEmitter } from "events";
 import * as path from "path";
 
@@ -39,7 +39,7 @@ export class App {
   public addAccount(
     host: string,
     code: string,
-  ): Promise<{ host: string; token: string }> {
+  ): Promise<{ host: string; token: string } | null> {
     return MastUtil.getAccessToken(
       this.config.registrations[host],
       host,
@@ -52,9 +52,8 @@ export class App {
         };
         this.config.accounts.push(acc);
         return acc;
-      } else {
-        return null;
       }
+      return null;
     });
   }
 
@@ -63,17 +62,17 @@ export class App {
     let fetched: { host: string; account: Account } =
       this.fetchedAccounts[acc.token];
     if (!fetched) {
-      let m: Mast = new Mast({
-        access_token: acc.token,
-        timeout_ms: App.timeout_ms,
-        api_url: "https://" + acc.host + "/api/v1/",
+      let m = createRestAPIClient({
+        accessToken: acc.token,
+        timeout: App.timeout_ms,
+        url: "https://" + acc.host,
       });
       return m
-        .get("accounts/verify_credentials")
+        .v1.accounts.verifyCredentials()
         .catch((e) => console.log(`Error while fetching account: ${e}`))
         .then((res) => {
           if (!res) return;
-          let account = <Account>res.data;
+          let account = res as unknown as Account;
           console.log(`Fetched acccount: ${account.username}@${acc.host}`);
           this.fetchedAccounts[acc.token] = {
             host: acc.host,
@@ -94,7 +93,7 @@ export class App {
         .catch((e) => callback(e))
         .then<Query>((res: { resp: object; data: Status[] }) => {
           if (!res || !res.data || res.data.length === 0) {
-            return new Promise<Query>((r, e) => r(undefined));
+            return new Promise<Query>((r, e) => r(query));
           } else {
             callback(null, ...res.data.map((d) => new Status(d)));
             return new Promise<Query>((resolve, reject) => {
@@ -107,7 +106,7 @@ export class App {
                 q["max_id"] = id;
                 return resolve(q);
               } else {
-                return resolve(undefined);
+                return resolve(query);
               }
             });
           }
