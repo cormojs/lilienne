@@ -4,7 +4,6 @@
     "target": "es2015",
     "noImplicitAny": false,
     "sourceMap": false,
-    "typeRoots": ["node_modules/@types", "types"],
     "outDir": "./",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,

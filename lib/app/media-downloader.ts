@@ -60,7 +60,7 @@ export default class MediaDownloader {
               }
             }).catch((e) => console.error("exit on", e));
             let sleep = new Promise((resolve, reject) => {
-              setTimeout(() => resolve(), 250);
+              setTimeout(() => resolve(void(0)), 250);
             });
             let v = await sleep.catch((_) => _);
           }
