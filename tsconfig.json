@@ -1,22 +1,17 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es2015",
-        "noImplicitAny": false,
-        "sourceMap": false,
-        "typeRoots": ["node_modules/@types", "types"],
-        "outDir": "./",
-        "allowSyntheticDefaultImports": true,
-        "experimentalDecorators": true,
-        "alwaysStrict": true,
-        "strictNullChecks": true,
-        "emitDecoratorMetadata": true
-    },
-    "include": [
-        "./lib/**/*"
-    ],
-    "files": [
-        "./main.ts",
-        "./down.ts"
-    ]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2015",
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "typeRoots": ["node_modules/@types", "types"],
+    "outDir": "./",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "alwaysStrict": true,
+    "strictNullChecks": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["./lib/**/*"],
+  "files": ["./main.ts", "./down.ts"]
 }

@@ -18,10 +18,12 @@
     "@types/electron": "^1.6.12",
     "@types/node": "^7.10.14",
     "css-loader": "^0.28.11",
+    "dart-sass": "^1.25.0",
     "electron": "^1.8.8",
     "electron-devtools-installer": "^2.2.4",
     "extract-text-webpack-plugin": "^2.1.2",
     "mastodon-api": "cormojs/mastodon-api#new-parser",
+    "prettier": "^3.5.3",
     "prominence": "^0.2.0",
     "reflect-metadata": "^0.1.14",
     "sanitize-html": "^1.27.5",
@@ -33,7 +35,6 @@
     "vue": "^2.7.16",
     "vue-loader": "^11.3.4",
     "vue-template-compiler": "^2.7.16",
-    "webpack": "^2.7.0",
-    "dart-sass": "^1.25.0"
+    "webpack": "^2.7.0"
   }
 }

@@ -1,162 +1,150 @@
 @mixin makeStatus() {
-    .status {
-        $ratio: 0.75;
-        $size: 150px;
-        $offsetX: 60px;
-        font-size: 10pt;
-        padding-left: $offsetX;
-        position: relative;
-        .avatar {
-            position: absolute;
-            left: 5px;
-            top: 5px;
-            width: 48px;
-            height: 48px;
+  .status {
+    $ratio: 0.75;
+    $size: 150px;
+    $offsetX: 60px;
+    font-size: 10pt;
+    padding-left: $offsetX;
+    position: relative;
+    .avatar {
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      width: 48px;
+      height: 48px;
+    }
+    .media {
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      flex-flow: row wrap;
+      width: 100%;
+      height: 100% * $ratio;
+      .thumbnail-container {
+        width: 100%;
+        max-width: $size;
+        max-height: $size * $ratio;
+        margin-left: 5px;
+        .thumbnail {
+          float: left;
+          height: 0px;
+          width: 0px;
+          padding-top: 100% * $ratio;
+          padding-left: 100%;
         }
-        .media {
-            box-sizing: border-box;
-            position: relative;
-            display: flex;
-            flex-flow: row wrap;
-            width: 100%;
-            height: 100% * $ratio;
-            .thumbnail-container {
-                width: 100%;
-                max-width: $size;
-                max-height: $size * $ratio;
-                margin-left: 5px;
-                .thumbnail {
-                    float: left;
-                    height: 0px;
-                    width: 0px;
-                    padding-top: 100% * $ratio;
-                    padding-left: 100%;
-                }
-            }
+      }
+    }
+    .footer {
+      height: 15pt + 2px;
+      .actions {
+        float: left;
+        .action {
+          font-size: 15pt;
         }
-        .footer {
-            height: 15pt + 2px;
-            .actions {
-                float: left;
-                .action {
-                    font-size: 15pt
-                }
-                .fired {
-                    font-weight: bold;
-                    color: pink;
-                }
-            }
-            .created_at {
-                float: right;
-                margin-right: 5px;
-                a {
-                    font-size: 8pt;
-                    color: #111;
-                }
-            }
+        .fired {
+          font-weight: bold;
+          color: pink;
         }
-
-        
-
-        
-        .header {
-            font-size: 10pt;
-            .boosted {
-                color: grey;
-                .icon {
-                    font-size: 10pt;
-                }
-            }
-            .left {
-                .account-username {
-                    color: lightblue;
-                }
-                .account-display_name {
-                    color: grey;
-                }
-            }
-
-            .right {
-                .account-host {
-                    color: grey;
-                }
-            }
+      }
+      .created_at {
+        float: right;
+        margin-right: 5px;
+        a {
+          font-size: 8pt;
+          color: #111;
         }
-        .content {
-            font-size: 10pt;
-        }
+      }
     }
 
-    .status-even {
-        background: white;
-        color: black;
-    }
+    .header {
+      font-size: 10pt;
+      .boosted {
+        color: grey;
+        .icon {
+          font-size: 10pt;
+        }
+      }
+      .left {
+        .account-username {
+          color: lightblue;
+        }
+        .account-display_name {
+          color: grey;
+        }
+      }
 
-    .status-odd {
-        background: lightcyan;
+      .right {
+        .account-host {
+          color: grey;
+        }
+      }
     }
-
-    .status.status-big-media {
-        $ratio: 0.75;
-        $size: 300px;
-        $avator: 30px;
-        $offsetX: $avator + 10px;
-
-        display: flex;
-        padding-left: $offsetX;
-        flex-direction: column;
-        border: solid 1px black;
-        position: relative;
-        .media {
-            order: 1;
-            margin-left: 0px - $offsetX;
-            margin-top: 10px;
-            .thumbnail-container {
-                max-width: $size;
-                max-height: $size * $ratio;
-            }
-        }
-        .avatar {
-            position: absolute;
-            left: 5px;
-            bottom: 5px;
-            top: initial;
-            right: initial;
-            width: 30px;
-            height: 30px;
-            order: 5
-        }
-        .footer {
-            height: 10pt + 2px;
-            order: 4;
-            .actions {
-                float: left;
-                .action {
-                    font-size: 10pt
-                }
-            }
-            .created_at {
-                float: right;
-                font-size: 8pt;
-                color: #111;
-            }
-        }
-        .content {
-            font-size: 8pt;
-            order: 3
-        }
-        .header {
-            font-size: 8pt;
-            order: 2
-        }
+    .content {
+      font-size: 10pt;
     }
+  }
+
+  .status-even {
+    background: white;
+    color: black;
+  }
+
+  .status-odd {
+    background: lightcyan;
+  }
+
+  .status.status-big-media {
+    $ratio: 0.75;
+    $size: 300px;
+    $avator: 30px;
+    $offsetX: $avator + 10px;
+
+    display: flex;
+    padding-left: $offsetX;
+    flex-direction: column;
+    border: solid 1px black;
+    position: relative;
+    .media {
+      order: 1;
+      margin-left: 0px - $offsetX;
+      margin-top: 10px;
+      .thumbnail-container {
+        max-width: $size;
+        max-height: $size * $ratio;
+      }
+    }
+    .avatar {
+      position: absolute;
+      left: 5px;
+      bottom: 5px;
+      top: initial;
+      right: initial;
+      width: 30px;
+      height: 30px;
+      order: 5;
+    }
+    .footer {
+      height: 10pt + 2px;
+      order: 4;
+      .actions {
+        float: left;
+        .action {
+          font-size: 10pt;
+        }
+      }
+      .created_at {
+        float: right;
+        font-size: 8pt;
+        color: #111;
+      }
+    }
+    .content {
+      font-size: 8pt;
+      order: 3;
+    }
+    .header {
+      font-size: 8pt;
+      order: 2;
+    }
+  }
 }
-
-
-    
-        
-
-            
-
-        
-
