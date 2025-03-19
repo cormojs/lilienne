@@ -1,56 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lilienne</title>
+    <link href="../build/main.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Lilienne</title>
-  <link href="../build/main.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-</head>
-
-<body>
-  <div id="lilienne" v-if="loaded">
-    <div class="header">
-      <div class="initial-settings">
-        <div>
-          <button @click="saveConfig">Save Config</button>
+  <body>
+    <div id="lilienne" v-if="loaded">
+      <div class="header">
+        <div class="initial-settings">
+          <div>
+            <button @click="saveConfig">Save Config</button>
+          </div>
+          <form @submit.prevent="register">
+            <input v-model.trim="hostInput" placeholder="example.com" />
+            <input type="submit" value="App登録" />
+          </form>
+          <a v-if="authUrl" href="#" @click="openAuth()">認証ページを開く</a>
+          <form @submit.prevent="addAccount">
+            <input v-model.trim="authCode" placeholder="input code" />
+            <input type="submit" value="アカウント登録" />
+          </form>
         </div>
-        <form @submit.prevent="register">
-          <input v-model.trim="hostInput" placeholder="example.com"></input>
-          <input type="submit" value="App登録"></input>
-        </form>
-        <a v-if="authUrl" href="#" @click="openAuth()">認証ページを開く</a>
-        <form @submit.prevent="addAccount">
-          <input v-model.trim="authCode" placeholder="input code"></input>
-          <input type="submit" value="アカウント登録"></input>
-        </form>
+        <toot></toot>
+        <div class="column-add">
+          <form @submit.prevent="addColumn(selectedConnection, selectedFilter)">
+            <div>
+              <select id="accountSelector" v-model="selectedConnection">
+                <option disabled value="">Select your account</option>
+                <option
+                  v-for="(pair, token, i) in app.fetchedAccounts"
+                  :key="i"
+                  :value="{ token: token, host: pair.host }"
+                >
+                  {{ '@' + pair.account.username + '@' + pair.host }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <template v-for="(filter, name) in app.config.filters">
+                <input
+                  type="radio"
+                  :id="name"
+                  :value="name"
+                  v-model="selectedFilter"
+                />
+                <label :for="name">{{ name }}</label>
+              </template>
+            </div>
+            <input type="submit" value="カラムを追加" />
+          </form>
+        </div>
       </div>
-      <toot></toot>
-      <div class="column-add">
-        <form @submit.prevent="addColumn(selectedConnection, selectedFilter)">
-          <div>
-            <select id="accountSelector" v-model="selectedConnection">
-            <option disabled value="">Select your account</option>
-            <option v-for="(pair, token, i) in app.fetchedAccounts"
-              :key="i" :value="{ token: token, host: pair.host }">{{ '@' + pair.account.username + '@' + pair.host }}</option>
-          </select>
-          </div>
-          <div>
-            <template v-for="(filter, name) in app.config.filters">
-              <input type="radio" :id="name" :value="name" v-model="selectedFilter">
-              <label :for="name">{{ name }}</label>
-            </template>
-          </div>
-          <input type="submit" value="カラムを追加" />
-        </form>
+      <div class="columns">
+        <column
+          v-for="(column, i) in vueConfig.columns"
+          :key="i"
+          :index="i"
+          :column="column"
+        >
+        </column>
       </div>
     </div>
-    <div class="columns">
-      <column v-for="(column, i) in vueConfig.columns" :key="i" :index="i" :column="column">
-      </column>
-    </div>
-  </div>
-  <script src="../build/build.js"></script>
-</body>
-
+    <script src="../build/build.js"></script>
+  </body>
 </html>
